@@ -446,7 +446,7 @@ input:focus-visible,
 
 .floating-alert {
   position: fixed;
-  z-index: 50;
+  z-index: 1200;
   top: 22px;
   left: 50%;
   min-width: min(92vw, 360px);

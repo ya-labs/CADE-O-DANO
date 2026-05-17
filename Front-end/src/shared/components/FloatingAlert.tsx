@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+
 type Props = {
     message?: string;
     variant: "loading" | "error";
@@ -8,7 +10,7 @@ function FloatingAlert({ message, variant }: Props) {
 
     const title = variant === "error" ? "Algo deu errado" : "Aguarde";
 
-    return (
+    const alert = (
         <div className={`floating-alert floating-alert--${variant}`} role={variant === "error" ? "alert" : "status"}>
             <span className="floating-alert__icon" aria-hidden="true" />
 
@@ -22,6 +24,10 @@ function FloatingAlert({ message, variant }: Props) {
             )}
         </div>
     );
+
+    if (typeof document === "undefined") return alert;
+
+    return createPortal(alert, document.body);
 }
 
 export default FloatingAlert;

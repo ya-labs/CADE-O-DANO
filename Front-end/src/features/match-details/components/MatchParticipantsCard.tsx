@@ -45,7 +45,6 @@ function MatchParticipantsCard ({ participant, highestTeamDamage, showDamageText
     const damageRatio = highestTeamDamage > 0
         ? totalDamage / highestTeamDamage
         : 0;
-    const damagePercent = Math.round(damageRatio * 100);
 
     const kda = `${kills}/${deaths}/${assists}`;
     const displayedElo = summonerElos[0] || summonerElos[1];
