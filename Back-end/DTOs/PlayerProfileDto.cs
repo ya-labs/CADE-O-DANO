@@ -9,4 +9,6 @@ public record PlayerProfileDto
     public string SummonerLevel { get; set; } = string.Empty;
 
     public string ProfileIconUrl { get; set; } = string.Empty;
+
+    public string FavoriteChampionSplashArtUrl { get; set; } = string.Empty;
 }

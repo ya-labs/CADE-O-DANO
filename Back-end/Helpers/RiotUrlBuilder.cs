@@ -18,4 +18,7 @@ public class RiotUrlBuilder
 
     public static string GetSummonerEloByPuuid(string puuid)
         => $"https://br1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}";
+    
+    public static string GetChampionMasteriesByPuuid(string puuid)
+        => $"https://br1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}";
 }

@@ -64,5 +64,7 @@ public class RiotProfile : Profile
                 opt => opt.MapFrom(src => _statsCalculatorService.CalculateWinRate(src.Wins, src.Losses)))
             .ForMember(dest => dest.LeagueIconUrl,
                 opt => opt.MapFrom(src => DataDragonHelper.GetRankIcon(src.Tier)));
+
+        CreateMap<MasteriesResponse, PlayerMasteriesDto>();
     }
 }

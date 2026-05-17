@@ -15,10 +15,13 @@ public static class PlayerStatsBuilder
         List<SummonerEloDto> summonerElos,
         List<MatchSummaryDto> recentMatches,
         List<MostPlayedChampionDto> mostPlayed,
+        List<PlayerMasteriesDto> masteries,
         List<HighestDamageChampionDto> highestDamage)
     {
+
         return new PlayerStatsDto
         {
+
             Profile = new PlayerProfileDto
             {
                 Puuid = puuid,
@@ -27,7 +30,10 @@ public static class PlayerStatsBuilder
                     ? DataDragonHelper.GetProfileIcon(profileIconId.Value.ToString())
                     : string.Empty,
 
-                SummonerLevel = summonerLevel?.ToString() ?? string.Empty
+                SummonerLevel = summonerLevel?.ToString() ?? string.Empty,
+                FavoriteChampionSplashArtUrl =
+                 DataDragonHelper.GetFavoriteChampionSplashArt(
+                    mostPlayed.FirstOrDefault()?.ChampionName ?? "Aatrox"),
             },
 
             RankedStats = new PlayerRankedStatsDto
@@ -39,7 +45,9 @@ public static class PlayerStatsBuilder
             {
                 RecentMatches = recentMatches,
             },
-            
+
+            Masteries = masteries,
+
             PerformanceSummary = new PlayerPerfomanceSummaryDto
             {
                 MostPlayedChampions = mostPlayed,

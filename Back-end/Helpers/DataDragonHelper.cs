@@ -19,7 +19,7 @@ public class DataDragonHelper
     public static string GetItemIcon(string itemId)
         => $"https://ddragon.leagueoflegends.com/cdn/{version}/img/item/{itemId}.png";
 
-    public static string GetRunes() 
+    public static string GetRunes()
         => $"https://ddragon.leagueoflegends.com/cdn/{version}/data/pt_BR/runesReforged.json";
 
     public static string GetRuneIcon(string iconPath)
@@ -27,6 +27,15 @@ public class DataDragonHelper
 
     public static string GetChampions()
         => $"https://ddragon.leagueoflegends.com/cdn/{version}/data/pt_BR/champion.json";
+
+    public static string GetMasteryIcon(int masteryLevel)
+    {
+        var level = Math.Min(masteryLevel, 10);
+
+        return $"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-collections/global/default/images/item-element/crest-and-banner-mastery-{level}.png";
+    }
+    public static string GetFavoriteChampionSplashArt(string championName)
+        => $"http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{championName}_0.jpg";
     public static List<string?> GetItemIconUrls(params int[] itemIds)
     {
         return itemIds

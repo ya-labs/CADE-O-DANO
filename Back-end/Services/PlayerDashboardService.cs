@@ -44,6 +44,8 @@ public class PlayerDashboardService : IPlayerDashboardService
 
       var recentMatches = await GetRecentMatchesByPuuid(puuid, matchIds);
 
+      var masteriesData = await _riotApiService.GetPlayerMasteriesByPuuid(puuid);
+
       var mostPlayedChampions = _statsCalculatorService.GetMostPlayedChampions(recentMatches);
 
       var highestDamageChampions = _statsCalculatorService.GetHighestDamageChampions(recentMatches);
@@ -57,6 +59,7 @@ public class PlayerDashboardService : IPlayerDashboardService
        summonerElo,
        recentMatches,
        mostPlayedChampions,
+       masteriesData,
        highestDamageChampions);
 
       return ServiceResult<PlayerStatsDto>.Success(playerStats);

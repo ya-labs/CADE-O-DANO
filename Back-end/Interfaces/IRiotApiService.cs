@@ -10,6 +10,7 @@ public interface IRiotApiService
   public Task<string> GetPuuidByRiotId(PlayerSearchRequestDto playerNickname);
   public Task<MatchSummaryDto?> GetMatchSummaryByMatchId(string matchId, string puuid);
   public Task<SummonerAccountResponse> GetSummonerAccountInfoByPuuid(string puuid);
+  public Task<List<PlayerMasteriesDto>> GetPlayerMasteriesByPuuid(string puuid);
   public Task<List<SummonerEloDto>> GetSummonerEloByPuuid(string puuid);
   public Task<RiotMatchResponse> GetMatchById(string matchId);
 }

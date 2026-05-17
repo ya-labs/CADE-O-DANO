@@ -13,13 +13,20 @@ public class RiotApiService : IRiotApiService
   private readonly IMapper _mapper;
   private readonly IMemoryCache _cache;
   private readonly IStatsCalculatorService _statsCalculatorService;
+  private readonly IRiotStaticDataService _riotStaticDataService;
 
-  public RiotApiService(HttpClient httpClient, IMapper mapper, IMemoryCache cache, IStatsCalculatorService statsCalculatorService)
+  public RiotApiService(
+    HttpClient httpClient,
+    IMapper mapper,
+    IMemoryCache cache,
+    IStatsCalculatorService statsCalculatorService,
+    IRiotStaticDataService riotStaticDataService)
   {
     _httpClient = httpClient;
     _mapper = mapper;
     _cache = cache;
     _statsCalculatorService = statsCalculatorService;
+    _riotStaticDataService = riotStaticDataService;
   }
 
   public async Task<List<string>> GetMatchIdsByPuuid(string puuid, string count)
@@ -79,6 +86,7 @@ public class RiotApiService : IRiotApiService
     var dto = _mapper.Map<MatchSummaryDto>(playerData);
     dto.MatchId = matchId;
     dto.GameStartTimestamp = FormatHelper.FormatUnixMilliseconds(matchData.Info.gameStartTimestamp);
+    dto.QueueType = RiotExtensions.GetQueueDescription(matchData.Info.QueueId);
     dto.Result = _statsCalculatorService.GetMatchResult(
       playerData.Win,
       matchData.Info.GameDuration);
@@ -115,6 +123,40 @@ public class RiotApiService : IRiotApiService
     return _mapper.Map<List<SummonerEloDto>>(eloData);
   }
 
+  public async Task<List<PlayerMasteriesDto>> GetPlayerMasteriesByPuuid(string puuid)
+  {
+    var response = await _httpClient.GetAsync(
+        RiotUrlBuilder.GetChampionMasteriesByPuuid(puuid));
+
+    if (!response.IsSuccessStatusCode)
+      throw new Exception("Failed to get champion masteries.");
+
+    var masteriesData = await response.Content
+        .ReadFromJsonAsync<List<MasteriesResponse>>();
+
+    if (masteriesData == null)
+      return [];
+
+    var championsResponse = await _riotStaticDataService.GetChampionsAsync();
+
+    var champions = championsResponse.Data.Values.ToList();
+
+    var dto = masteriesData.Select(mastery =>
+    {
+      var champion = champions
+          .FirstOrDefault(c => c.Key == mastery.ChampionId.ToString());
+
+      return new PlayerMasteriesDto
+      {
+        MasteryIconUrl = DataDragonHelper.GetMasteryIcon(mastery.ChampionLevel),
+        ChampionName = champion?.Name ?? "Unknown",
+        ChampionIconUrl = DataDragonHelper.GetChampionIcon(champion?.Id),
+        ChampionLevel = mastery.ChampionLevel,
+      };
+    }).ToList();
+
+    return dto;
+  }
   public async Task<RiotMatchResponse> GetMatchById(string matchId)
   {
     if (_cache.TryGetValue(matchId, out RiotMatchResponse cachedMatch))

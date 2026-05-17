@@ -10,6 +10,7 @@ public record MatchSummaryDto
     public string? ChampionIconUrl { get; set; }
     public string? ChampionSplashArtUrl { get; set; }
     public string? GameStartTimestamp { get; set; }
+    public string QueueType { get; set; } = string.Empty;
     public int Kills { get; set; }
     public int Deaths { get; set; }
     public int Assists { get; set; }
