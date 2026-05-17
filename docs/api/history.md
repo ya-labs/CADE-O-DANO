@@ -14,11 +14,11 @@ No front-end, este endpoint é consumido pela função `buscarHistorico` em `Fro
 
 ## Parâmetros
 
-| Nome | Tipo | Obrigatório | Descrição |
-|------|------|-------------|-----------|
-| Nickname | string | Sim | Nome do jogador usado na rota. |
-| Hashtag | string | Sim | Tag do jogador usada na rota, sem `#`. |
-| count | string | Sim | Quantidade de partidas solicitada à Riot API. No front-end atual é enviado como `100`. |
+| Nome     | Tipo   | Obrigatório | Descrição                                                                              |
+| -------- | ------ | ----------- | -------------------------------------------------------------------------------------- |
+| Nickname | string | Sim         | Nome do jogador usado na rota.                                                         |
+| Hashtag  | string | Sim         | Tag do jogador usada na rota, sem `#`.                                                 |
+| count    | string | Sim         | Quantidade de partidas solicitada à Riot API. No front-end atual é enviado como `100`. |
 
 ## Exemplo de request
 
@@ -39,7 +39,8 @@ GET /search/Faker/BR1?count=100
       "puuid": "player-puuid",
       "summonerName": "Faker#BR1",
       "summonerLevel": "123",
-      "profileIconUrl": "https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profileIconId}.png"
+      "profileIconUrl": "https://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profileIconId}.png",
+      "favoriteChampionSplashArtUrl": "http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{championName}_0.jpg"
     },
     "rankedStats": {
       "elos": [
@@ -76,6 +77,15 @@ GET /search/Faker/BR1?count=100
         }
       ]
     },
+     "masteries": [
+      {
+        "masteryIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-collections/global/default/images/item-element/crest-and-banner-mastery-10.png",
+        "championName": "Riven",
+        "championIconUrl": "https://ddragon.leagueoflegends.com/cdn/16.9.1/img/champion/Riven.png",
+        "championLevel": 23,
+        "lastPlayTime": 0
+      },
+      ]
     "performanceSummary": {
       "mostPlayedChampions": [
         {
