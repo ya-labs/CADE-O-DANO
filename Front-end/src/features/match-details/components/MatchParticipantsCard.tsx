@@ -162,7 +162,6 @@ function MatchParticipantsCard ({ participant, highestTeamDamage, showDamageText
 
                 <div className="participant-card__damage-details" aria-hidden={!showDamageText}>
                     <strong>{totalDamage.toLocaleString("pt-BR")}</strong>
-                    <span>{damagePercent}% do maior dano</span>
                 </div>
             </div>
         </div>
