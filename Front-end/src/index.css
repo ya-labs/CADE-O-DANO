@@ -143,13 +143,21 @@ input:focus-visible,
 
 .remote-image {
   opacity: 1;
+  background: rgba(255, 255, 255, 0.055);
   transition: opacity var(--motion-base) var(--ease-smooth), filter var(--motion-base) var(--ease-smooth), transform var(--motion-base) var(--ease-out);
 }
 
 .remote-image--loading {
-  opacity: 0.62;
-  filter: saturate(0.55) brightness(0.78);
-  animation: imageLoadingPulse 1.15s ease-in-out infinite;
+  opacity: 0.76;
+  background:
+    linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.18) 42%, transparent 72%),
+    linear-gradient(135deg, rgba(65, 217, 255, 0.13), rgba(248, 213, 107, 0.08)),
+    rgba(10, 15, 26, 0.92);
+  background-size: 220% 100%, 100% 100%, 100% 100%;
+  filter: saturate(0.62) brightness(0.84);
+  animation:
+    imageLoadingPulse 1.15s ease-in-out infinite,
+    remoteImageShimmer 1.2s var(--ease-smooth) infinite;
 }
 
 .remote-image--error {
@@ -1027,6 +1035,7 @@ input:focus-visible,
 .match-card__meta {
   display: grid;
   gap: 4px;
+  justify-items: center;
 }
 
 .match-result {
@@ -2338,12 +2347,21 @@ input:focus-visible,
 @keyframes imageLoadingPulse {
   0%,
   100% {
-    opacity: 0.48;
+    opacity: 0.62;
     transform: scale(0.985);
   }
   50% {
-    opacity: 0.82;
+    opacity: 0.86;
     transform: scale(1);
+  }
+}
+
+@keyframes remoteImageShimmer {
+  from {
+    background-position: 180% 0, 0 0, 0 0;
+  }
+  to {
+    background-position: -80% 0, 0 0, 0 0;
   }
 }
 

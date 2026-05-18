@@ -12,6 +12,7 @@ type ChampionProps = {
 
 export type MatchSummary = PlayerKda & ChampionProps & {
     matchId: string;
+    queueType: string;
     totalDamage: number;
     gameStartTimestamp: string;
     result: 0 | 1 | 2;

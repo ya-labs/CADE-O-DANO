@@ -23,6 +23,7 @@ type Props =  {
 function MatchCard ({ match, maxDamageInList, minDamageInList, onSelectMatch, isLoadingMatchDetails, showDamageText }: Props) {
     const { 
         matchId, 
+        queueType,
         championName, 
         championIconUrl, 
         kills, 
@@ -72,7 +73,7 @@ function MatchCard ({ match, maxDamageInList, minDamageInList, onSelectMatch, is
                 <strong className={`match-result match-result--${resultadoPartida.classModifier}`}>
                     {resultadoPartida.label}
                 </strong>
-                <span>Ranqueada</span>
+                <span>{queueType}</span>
             </div>
             
             <div className="match-card__meta">
