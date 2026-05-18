@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, LoaderCircle, X } from "lucide-react";
 import type { StoredPlayer } from "../../../services/storage/playerStorage";
 import FloatingAlert from "../../../shared/components/FloatingAlert";
 import RemoteImage from "../../../shared/components/RemoteImage";
@@ -9,9 +9,10 @@ type Props = {
     loading: boolean;
     historyError: string;
     searchedPlayers: StoredPlayer[];
+    onRemoveSearchedPlayer: (nick: string, tag: string) => void;
 };
 
-function LoginPage({ onSearch, loading, historyError, searchedPlayers }: Props) {
+function LoginPage({ onSearch, loading, historyError, searchedPlayers, onRemoveSearchedPlayer }: Props) {
     const [nick, setNick] = useState("");
     const [tag, setTag] = useState("");
     const [openSearchPlayersList, setOpenSearchPlayersList] = useState(false);
@@ -77,6 +78,11 @@ function LoginPage({ onSearch, loading, historyError, searchedPlayers }: Props) 
         setTag(tag);
 
         onSearch(nick, tag);
+    }
+
+    function handleRemoveSearchedPlayer(nick: string, tag: string) {
+        onRemoveSearchedPlayer(nick, tag);
+        setActiveSearchedPlayerIndex(null);
     }
 
     function handleSearchedPlayersButtonKeyDown (event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -162,26 +168,42 @@ function LoginPage({ onSearch, loading, historyError, searchedPlayers }: Props) 
                                 tag, 
                                 profileIconUrl 
                             }, index) => (
+                                <div
+                                    key={`${nick}-${tag}`}
+                                    className={
+                                        activeSearchedPlayerIndex === index ?
+                                            "searched-players__item searched-players__item--selected" :
+                                            "searched-players__item"
+                                    }
+                                    onMouseEnter={() => setActiveSearchedPlayerIndex(index)}
+                                >
                                 <button
                                     tabIndex={-1}
                                     ref={(element) => {
                                         searchedPlayerButtonRefs.current[index] = element;
                                     }}
-                                    key={`${nick}-${tag}`}
-                                    className={
-                                        activeSearchedPlayerIndex === index ? 
-                                            "searched-players__button searched-players__button--selected" : 
-                                            "searched-players__button"
-                                    }
+                                    className="searched-players__button"
                                     type="button"
-                                    onMouseEnter={() => setActiveSearchedPlayerIndex(index)}
                                     onClick={() => handleSearchedPlayersButtonClick(nick, tag)}
                                     onKeyDown={(event) => handleSearchedPlayersButtonKeyDown(event, index)}
                                 >
                                     <RemoteImage className="searched-players__icon" src={profileIconUrl} alt="Ícone do jogador pesquisado"/>
-                                    <p className="searched-players__nick">{nick}</p>
-                                    <p className="searched-players__tag">#{tag}</p>
+                                    <span className="searched-players__identity">
+                                        <span className="searched-players__nick">{nick}</span>
+                                        <span className="searched-players__tag">#{tag}</span>
+                                    </span>
                                 </button>
+
+                                    <button
+                                        className="searched-players__remove-button"
+                                        type="button"
+                                        aria-label={`Remover ${nick}#${tag} da lista de jogadores pesquisados`}
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={() => handleRemoveSearchedPlayer(nick, tag)}
+                                    >
+                                        <X size={16} strokeWidth={2.4} aria-hidden="true" />
+                                    </button>
+                                </div>
                             ))}
                         </div>
                     )}

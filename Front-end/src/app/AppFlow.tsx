@@ -24,6 +24,7 @@ import {
     getCurrentPlayer, 
     getCurrentPlayerHistory,
     getSearchedPlayers, 
+    removeSearchedPlayer,
     saveCurrentPlayer, 
     saveCurrentPlayerHistory,
     saveSearchedPlayer, 
@@ -149,6 +150,11 @@ function AppFlow () {
         setScreen("login");
     }
 
+    function handleRemoveSearchedPlayer(nick: string, tag: string) {
+        removeSearchedPlayer(nick, tag);
+        setSearchedPlayers(getSearchedPlayers());
+    }
+
     const playerSidebar = playerProfile && rankedStats && performanceSummary ? (
         <PlayerSidebar
             summonerName={playerProfile.summonerName}
@@ -166,6 +172,7 @@ function AppFlow () {
                     historyError={historyRequest.error}
                     loading={historyRequest.loading}
                     searchedPlayers={searchedPlayers}
+                    onRemoveSearchedPlayer={handleRemoveSearchedPlayer}
                 />
             )}
             {screen === "historico" && (

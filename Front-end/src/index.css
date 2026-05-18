@@ -397,27 +397,40 @@ input:focus-visible,
   box-shadow: var(--shadow-soft);
 }
 
-.searched-players__button {
+.searched-players__item {
   width: 100%;
   min-height: 48px;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 32px;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 6px 6px 6px 10px;
   border: 1px solid transparent;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.055);
   color: var(--text);
-  text-align: left;
   transition: transform var(--motion-base) var(--ease-out), border-color var(--motion-base) var(--ease-smooth), background var(--motion-base) var(--ease-smooth);
 }
 
-.searched-players__button--selected,
-.searched-players__button:hover {
+.searched-players__item--selected,
+.searched-players__item:hover {
   transform: translateX(4px);
   border-color: rgba(65, 217, 255, 0.36);
   background: rgba(65, 217, 255, 0.15);
+}
+
+.searched-players__button {
+  min-width: 0;
+  min-height: 40px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
 }
 
 .searched-players__icon {
@@ -426,6 +439,12 @@ input:focus-visible,
   border: 1px solid rgba(248, 213, 107, 0.5);
   border-radius: 50%;
   object-fit: cover;
+}
+
+.searched-players__identity {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
 }
 
 .searched-players__nick {
@@ -442,6 +461,25 @@ input:focus-visible,
   font-family: var(--mono);
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.searched-players__remove-button {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  transition: color var(--motion-fast) var(--ease-smooth), background var(--motion-fast) var(--ease-smooth), border-color var(--motion-fast) var(--ease-smooth), transform var(--motion-fast) var(--ease-out);
+}
+
+.searched-players__remove-button:hover {
+  transform: scale(1.04);
+  border-color: rgba(255, 79, 104, 0.32);
+  background: rgba(255, 79, 104, 0.12);
+  color: #ffb8c2;
 }
 
 .floating-alert {

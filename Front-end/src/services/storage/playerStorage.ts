@@ -123,6 +123,20 @@ export function saveSearchedPlayer(player: StoredPlayer) {
     localStorage.setItem(SEARCHED_PLAYERS_KEY, JSON.stringify(updatedPlayers));
 }
 
+export function removeSearchedPlayer(nick: string, tag: string) {
+    const updatedPlayers = getSearchedPlayers().filter(
+        (storedPlayer) =>
+            storedPlayer.nick !== nick || storedPlayer.tag !== tag
+    );
+
+    if (updatedPlayers.length === 0) {
+        localStorage.removeItem(SEARCHED_PLAYERS_KEY);
+        return;
+    }
+
+    localStorage.setItem(SEARCHED_PLAYERS_KEY, JSON.stringify(updatedPlayers));
+}
+
 export function getSearchedPlayers(): StoredPlayer[] {
     const storedPlayers = parseStoredValue(
         SEARCHED_PLAYERS_KEY,
