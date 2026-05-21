@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import type { MatchSummary } from "../../../types/match";
-import type { HighestDamageChampion, MostPlayedChampion } from "../../../services/api/types";
+import type { HighestDamageChampion, Mastery, MostPlayedChampion } from "../../../services/api/types";
 import BackButton from "../../../shared/components/BackButton";
 import FloatingAlert from "../../../shared/components/FloatingAlert";
 import RemoteImage from "../../../shared/components/RemoteImage";
@@ -11,6 +11,7 @@ type Props = {
     onBack: () => void;
     onRefresh: () => Promise<void>;
     matches: MatchSummary[];
+    masteries: Mastery[];
     onSelectMatch: (matchId: string) => Promise<void>;
     isLoadingMatchDetails: boolean;
     isRefreshingHistory: boolean;
@@ -19,10 +20,18 @@ type Props = {
     highestDamageChampions: HighestDamageChampion[];
 }
 
+function formatLastPlayTime(lastPlayTime: number) {
+    if (lastPlayTime <= 0) return "Hoje";
+    if (lastPlayTime === 1) return "1 dia";
+
+    return `${lastPlayTime} dias`;
+}
+
 function HistoryPage ({
     onBack,
     onRefresh,
     matches,
+    masteries,
     onSelectMatch,
     isLoadingMatchDetails,
     isRefreshingHistory,
@@ -111,6 +120,34 @@ function HistoryPage ({
                                 <RemoteImage className="champion-icon" src={championIconUrl} alt={`Ícone do campeão ${championName}`}/>
                                 <p className="champion-name">{championName}</p>
                                 <p className="champion-subinfo">{highestDamage.toLocaleString("pt-BR")} de dano total</p>
+                            </div>
+                        ))}
+                    </section>
+
+                    <section className="history-insights__section">
+                        <p className="sidebar-section-title">Maiores maestrias</p>
+                        {masteries.map(({
+                            masteryIconUrl,
+                            championName,
+                            championIconUrl,
+                            championLevel,
+                            lastPlayTime,
+                        }) => (
+                            <div key={championName+championLevel} className="history-mastery-card">
+                                <div className="history-mastery-card__icons">
+                                    <RemoteImage className="history-mastery-card__mastery-icon" src={masteryIconUrl} alt={`Maestria level ${championLevel}`}/>
+                                    <RemoteImage className="history-mastery-card__champion-icon" src={championIconUrl} alt={`Ícone do campeão ${championName}`}/>
+                                </div>
+
+                                <div className="history-mastery-card__content">
+                                    <p className="history-mastery-card__champion">{championName}</p>
+                                    <p className="history-mastery-card__level">Maestria {championLevel}</p>
+                                </div>
+
+                                <div className="history-mastery-card__meta">
+                                    <span>Última partida</span>
+                                    <strong>{formatLastPlayTime(lastPlayTime)}</strong>
+                                </div>
                             </div>
                         ))}
                     </section>

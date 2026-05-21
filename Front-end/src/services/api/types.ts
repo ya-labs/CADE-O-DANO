@@ -50,11 +50,20 @@ type PlayerPerformanceSummary = {
     highestDamageChampions: HighestDamageChampion[]; 
 }
 
+export type Mastery = {
+    masteryIconUrl: string;
+    championName: string;
+    championIconUrl: string;
+    championLevel: number;
+    lastPlayTime: number;
+}
+
 export type SearchHistoryApiData = {
     profile: PlayerProfile;
     rankedStats: PlayerRankedStats;
     matches: PlayerMatches;
     performanceSummary: PlayerPerformanceSummary;
+    masteries: Mastery[];
 };
 
 export type SearchHistoryApiResponse = {

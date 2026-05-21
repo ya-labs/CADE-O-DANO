@@ -48,6 +48,7 @@ function AppFlow () {
     const playerProfile = playerData?.profile;
     const rankedStats = playerData?.rankedStats;
     const playerMatches = playerData?.matches;
+    const playerMasteries = playerData?.masteries;
     const performanceSummary = playerData?.performanceSummary;
 
     useEffect(() => {
@@ -181,6 +182,7 @@ function AppFlow () {
                         onBack={handleBackToLogin}
                         onRefresh={handleRefreshHistory}
                         matches={playerMatches?.recentMatches || []}
+                        masteries={playerMasteries || []}
                         isRefreshingHistory={historyRequest.loading}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
