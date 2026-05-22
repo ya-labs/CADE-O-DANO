@@ -2971,6 +2971,13 @@ input:focus-visible,
     grid-template-columns: 1fr;
   }
 
+    .match-card__result,
+    .match-card__meta {
+        display: grid;
+        gap: 4px;
+        justify-items: end;
+    }
+
   .match-card {
     grid-template-columns: 68px minmax(0, 1fr);
     grid-template-areas:
