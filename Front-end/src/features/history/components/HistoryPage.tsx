@@ -9,9 +9,10 @@ import MatchCard from "./MatchCard";
 
 type Props = {
     onBack: () => void;
+    onShowMasteries: () => void;
     onRefresh: () => Promise<void>;
     matches: MatchSummary[];
-    masteries: Mastery[];
+    mastery: Mastery | null;
     onSelectMatch: (matchId: string) => Promise<void>;
     isLoadingMatchDetails: boolean;
     isRefreshingHistory: boolean;
@@ -29,9 +30,10 @@ function formatLastPlayTime(lastPlayTime: number) {
 
 function HistoryPage ({
     onBack,
+    onShowMasteries,
     onRefresh,
     matches,
-    masteries,
+    mastery,
     onSelectMatch,
     isLoadingMatchDetails,
     isRefreshingHistory,
@@ -124,33 +126,44 @@ function HistoryPage ({
                         ))}
                     </section>
 
-                    <section className="history-insights__section">
-                        <p className="sidebar-section-title">Maiores maestrias</p>
-                        {masteries.map(({
-                            masteryIconUrl,
-                            championName,
-                            championIconUrl,
-                            championLevel,
-                            lastPlayTime,
-                        }) => (
-                            <div key={championName+championLevel} className="history-mastery-card">
+                    {mastery && (
+                        <section className="history-insights__section">
+                            <p className="sidebar-section-title">Maior maestria</p>
+
+                            <div className="history-mastery-card">
                                 <div className="history-mastery-card__icons">
-                                    <RemoteImage className="history-mastery-card__mastery-icon" src={masteryIconUrl} alt={`Maestria level ${championLevel}`}/>
-                                    <RemoteImage className="history-mastery-card__champion-icon" src={championIconUrl} alt={`Ícone do campeão ${championName}`}/>
+                                    <RemoteImage
+                                        className="history-mastery-card__mastery-icon"
+                                        src={mastery.masteryIconUrl}
+                                        alt={`Maestria level ${mastery.championLevel}`}
+                                    />
+
+                                    <RemoteImage
+                                        className="history-mastery-card__champion-icon"
+                                        src={mastery.championIconUrl}
+                                        alt={`Ícone do campeão ${mastery.championName}`}
+                                    />
                                 </div>
 
                                 <div className="history-mastery-card__content">
-                                    <p className="history-mastery-card__champion">{championName}</p>
-                                    <p className="history-mastery-card__level">Maestria {championLevel}</p>
+                                    <p className="history-mastery-card__champion">{mastery.championName}</p>
+                                    <p className="history-mastery-card__level">Maestria {mastery.championLevel}</p>
                                 </div>
 
                                 <div className="history-mastery-card__meta">
                                     <span>Última partida</span>
-                                    <strong>{formatLastPlayTime(lastPlayTime)}</strong>
+                                    <strong>{formatLastPlayTime(mastery.lastPlayTime)}</strong>
                                 </div>
                             </div>
-                        ))}
-                    </section>
+
+                            <button
+                                className="history-mastery-card"
+                                onClick={onShowMasteries}
+                            >
+                                <p>Ver todas as maestrias</p>
+                            </button>
+                        </section>
+                    )}
                 </aside>
 
                 <section className="match-list">

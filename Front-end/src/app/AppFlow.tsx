@@ -30,8 +30,9 @@ import {
     saveSearchedPlayer, 
     type StoredPlayer 
 } from "../services/storage/playerStorage";
+import MasteryPage from "../features/mastery/components/MasteryPage";
 
-type Screen = "login" | "historico" | "detalhes";
+type Screen = "login" | "historico" | "detalhes" | "maestrias";
 
 function AppFlow () {
     const [playerData, setPlayerData] = useState<SearchHistoryData | null>(() => getCurrentPlayerHistory());
@@ -180,15 +181,24 @@ function AppFlow () {
                 <AppLayout sidebar={playerSidebar}>
                     <HistoryPage
                         onBack={handleBackToLogin}
+                        onShowMasteries={()=> setScreen("maestrias")}
                         onRefresh={handleRefreshHistory}
                         matches={playerMatches?.recentMatches || []}
-                        masteries={playerMasteries || []}
+                        mastery={playerMasteries?.[0] || null}
                         isRefreshingHistory={historyRequest.loading}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
                         onSelectMatch={handleSelectMatch}
                         mostPlayedChampions={performanceSummary?.mostPlayedChampions || []}
                         highestDamageChampions={performanceSummary?.highestDamageChampions || []}
+                    />
+                </AppLayout>
+            )}
+            {screen === "maestrias" && (
+                <AppLayout sidebar={playerSidebar}>
+                    <MasteryPage
+                        onBack={() => setScreen("historico")}
+                        masteries={playerMasteries || []}
                     />
                 </AppLayout>
             )}

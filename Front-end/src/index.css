@@ -1311,7 +1311,7 @@ input:focus-visible,
   position: absolute;
   inset: 3px auto 3px 3px;
   width: calc(100% - 6px);
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: 6px;
   background:
     linear-gradient(90deg, transparent calc(100% - 14px), color-mix(in srgb, var(--damage-color) 64%, white 22%)),
     linear-gradient(180deg, color-mix(in srgb, var(--damage-color) 28%, white 10%), transparent 58%, rgba(0, 0, 0, 0.12)),
@@ -2723,6 +2723,10 @@ input:focus-visible,
 
     .match-card__items-summary .participant-card__items {
         grid-template-columns: repeat(7, 30px);
+    }
+
+    .match-card__result, .match-card__meta {
+        justify-items: left;
     }
 
   .app-layout {
