@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { ChevronRight, RefreshCw } from "lucide-react";
 import type { MatchSummary } from "../../../types/match";
 import type { HighestDamageChampion, Mastery, MostPlayedChampion } from "../../../services/api/types";
 import BackButton from "../../../shared/components/BackButton";
@@ -157,10 +157,12 @@ function HistoryPage ({
                             </div>
 
                             <button
-                                className="history-mastery-card"
+                                type="button"
+                                className="history-mastery-link"
                                 onClick={onShowMasteries}
                             >
-                                <p>Ver todas as maestrias</p>
+                                <span>Ver todas as maestrias</span>
+                                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
                             </button>
                         </section>
                     )}
