@@ -21,4 +21,7 @@ public class RiotUrlBuilder
     
     public static string GetChampionMasteriesByPuuid(string puuid)
         => $"https://br1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}";
+
+    public static string GetActiveMatchByPuuid(string puuid)
+        => $"https://br1.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{puuid}";
 }

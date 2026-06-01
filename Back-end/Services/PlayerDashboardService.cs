@@ -186,4 +186,23 @@ public class PlayerDashboardService : IPlayerDashboardService
         .Select(x => x!)
         .ToList();
   }
+
+  public async Task<ServiceResult<ActiveMatchDto>> GetActiveMatch(string puuid)
+  {
+    try
+    {
+      var activeMatch = await _riotApiService.GetActiveMatchByPuuid(puuid);
+
+      if (activeMatch == null)
+        return ServiceResult<ActiveMatchDto>.Fail("Nenhuma partida ativa encontrada para este jogador.");
+
+      var dto = _mapper.Map<ActiveMatchDto>(activeMatch);
+
+      return ServiceResult<ActiveMatchDto>.Success(dto);
+    }
+    catch (Exception ex)
+    {
+      return ServiceResult<ActiveMatchDto>.Fail($"Erro ao buscar partida ativa! {ex.Message}");
+    }
+  }
 }
