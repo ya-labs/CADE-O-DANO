@@ -13,3 +13,7 @@ O objetivo é manter os contratos entre front-end e back-end claros, rastreávei
 ## Arquitetura
 
 - [Visão geral](architecture/overview.md)
+
+## Processo de trabalho
+
+- [Fluxo de trabalho com GitHub Issues e GitHub Projects](fluxo-de-trabalho-github.md)
