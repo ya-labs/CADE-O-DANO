@@ -66,7 +66,10 @@ public class PlayerDashboardService : IPlayerDashboardService
     }
     catch (Exception ex)
     {
-      return ServiceResult<PlayerStatsDto>.Fail($"Erro ao buscar jogador pelo nome de usuário! {ex.Message}");
+      return ServiceResult<PlayerStatsDto>.Fail(
+        BuildServiceErrorMessage(
+          $"montar o painel do jogador {playerNickname.Nickname}#{playerNickname.Hashtag}",
+          ex));
     }
   }
 
@@ -154,7 +157,8 @@ public class PlayerDashboardService : IPlayerDashboardService
     }
     catch (Exception ex)
     {
-      return ServiceResult<MatchDetailsDto>.Fail(ex.Message);
+      return ServiceResult<MatchDetailsDto>.Fail(
+        BuildServiceErrorMessage($"montar os detalhes da partida {matchId}", ex));
     }
   }
 
@@ -223,7 +227,8 @@ public class PlayerDashboardService : IPlayerDashboardService
     }
     catch (Exception ex)
     {
-      return ServiceResult<ActiveMatchDto>.Fail($"Erro ao buscar partida ativa! {ex.Message}");
+      return ServiceResult<ActiveMatchDto>.Fail(
+        BuildServiceErrorMessage($"montar a partida ativa do jogador {FormatPuuid(puuid)}", ex));
     }
   }
 
@@ -285,5 +290,18 @@ public class PlayerDashboardService : IPlayerDashboardService
       });
 
     return (await Task.WhenAll(banTasks)).ToList();
+  }
+
+  private static string BuildServiceErrorMessage(string operation, Exception exception)
+  {
+    return $"Erro ao {operation}. Detalhes: {exception.Message}";
+  }
+
+  private static string FormatPuuid(string puuid)
+  {
+    if (string.IsNullOrWhiteSpace(puuid))
+      return "(PUUID vazio)";
+
+    return puuid.Length <= 12 ? puuid : $"{puuid[..8]}...";
   }
 }

@@ -4,6 +4,7 @@ using CadeODano.Helpers;
 using CadeODano.Interfaces;
 using CadeODano.Models;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 
 namespace CadeODano.Services;
 
@@ -34,12 +35,14 @@ public class RiotApiService : IRiotApiService
     var response = await _httpClient.GetAsync(RiotUrlBuilder.GetRecentMatchesByPuuid(puuid, count));
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception("Não foi possível buscar o histórico de partidas.");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar histórico de partidas do jogador {FormatPuuid(puuid)}");
 
     var matchIds = await response.Content.ReadFromJsonAsync<List<string>>();
 
     if (matchIds == null || !matchIds.Any())
-      throw new Exception("Nenhuma partida encontrada para este jogador.");
+      throw new InvalidOperationException("A Riot API não retornou nenhuma partida recente para este jogador.");
 
     return matchIds;
   }
@@ -52,12 +55,14 @@ public class RiotApiService : IRiotApiService
     var response = await _httpClient.GetAsync(RiotUrlBuilder.GetPuuidByRiotId(nickname, hashtag));
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception("Jogador não encontrado na Riot API");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar PUUID do jogador {playerNickname.Nickname}#{playerNickname.Hashtag}");
 
     var accountData = await response.Content.ReadFromJsonAsync<RiotAccountResponse>();
 
     if (accountData == null || string.IsNullOrEmpty(accountData.Puuid))
-      throw new Exception("Não foi possível obter o PUUID do jogador.");
+      throw new InvalidOperationException($"A Riot API retornou uma resposta sem PUUID para {playerNickname.Nickname}#{playerNickname.Hashtag}.");
 
     return accountData.Puuid;
   }
@@ -70,7 +75,7 @@ public class RiotApiService : IRiotApiService
     if (!response.IsSuccessStatusCode)
     {
       Console.WriteLine(
-          $"Erro match {matchId}: {(int)response.StatusCode}");
+          $"Partida {matchId} ignorada no histórico: Riot API retornou {(int)response.StatusCode} ({response.ReasonPhrase}).");
 
       return null;
     }
@@ -81,7 +86,10 @@ public class RiotApiService : IRiotApiService
         .FirstOrDefault(x => x.Puuid == puuid);
 
     if (playerData == null)
+    {
+      Console.WriteLine($"Partida {matchId} ignorada no histórico: participante {FormatPuuid(puuid)} não foi encontrado na resposta da Riot API.");
       return null;
+    }
 
     var dto = _mapper.Map<MatchSummaryDto>(playerData);
     dto.MatchId = matchId;
@@ -100,9 +108,15 @@ public class RiotApiService : IRiotApiService
     var response = await _httpClient.GetAsync(RiotUrlBuilder.GetSummonerByPuuid(puuid));
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception("Failed to get summoner account info.");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar dados da conta do jogador {FormatPuuid(puuid)}");
 
     var accountData = await response.Content.ReadFromJsonAsync<SummonerAccountResponse>();
+
+    if (accountData == null)
+      throw new InvalidOperationException($"A Riot API retornou dados de conta vazios para o jogador {FormatPuuid(puuid)}.");
+
     return accountData!;
   }
 
@@ -112,7 +126,9 @@ public class RiotApiService : IRiotApiService
         RiotUrlBuilder.GetSummonerEloByPuuid(puuid));
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception("Failed to get summoner elo info.");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar elos ranqueados do jogador {FormatPuuid(puuid)}");
 
     var eloData = await response.Content
         .ReadFromJsonAsync<List<SummonerEloResponse>>();
@@ -129,7 +145,9 @@ public class RiotApiService : IRiotApiService
         RiotUrlBuilder.GetChampionMasteriesByPuuid(puuid));
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception("Failed to get champion masteries.");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar maestrias do jogador {FormatPuuid(puuid)}");
 
     var masteriesData = await response.Content
         .ReadFromJsonAsync<List<MasteriesResponse>>();
@@ -165,9 +183,14 @@ public class RiotApiService : IRiotApiService
     var response = await _httpClient.GetAsync(RiotUrlBuilder.GetMatchInfoByMatchId(matchId));
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception($"Failed to get match data for {matchId}");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar dados da partida {matchId}");
 
     var matchData = await response.Content.ReadFromJsonAsync<RiotMatchResponse>();
+
+    if (matchData == null)
+      throw new InvalidOperationException($"A Riot API retornou dados vazios para a partida {matchId}.");
 
     if (matchData != null)
     {
@@ -185,9 +208,64 @@ public class RiotApiService : IRiotApiService
       return null;
 
     if (!response.IsSuccessStatusCode)
-      throw new Exception("Não foi possível buscar a partida ativa.");
+      throw await BuildRiotApiException(
+        response,
+        $"buscar partida ativa do jogador {FormatPuuid(puuid)}");
 
-    return await response.Content.ReadFromJsonAsync<ActiveMatchResponse>();
+    var activeMatch = await response.Content.ReadFromJsonAsync<ActiveMatchResponse>();
+
+    if (activeMatch == null)
+      throw new InvalidOperationException($"A Riot API retornou dados vazios para a partida ativa do jogador {FormatPuuid(puuid)}.");
+
+    return activeMatch;
   }
 
+  private static async Task<Exception> BuildRiotApiException(HttpResponseMessage response, string operation)
+  {
+    var riotMessage = await TryReadRiotErrorMessage(response);
+    var statusCode = (int)response.StatusCode;
+    var reasonPhrase = string.IsNullOrWhiteSpace(response.ReasonPhrase)
+      ? "sem descrição HTTP"
+      : response.ReasonPhrase;
+
+    var message = $"Erro ao {operation}. Riot API retornou HTTP {statusCode} ({reasonPhrase}).";
+
+    if (!string.IsNullOrWhiteSpace(riotMessage))
+      message += $" Mensagem da Riot: {riotMessage}";
+
+    return new HttpRequestException(message, null, response.StatusCode);
+  }
+
+  private static async Task<string?> TryReadRiotErrorMessage(HttpResponseMessage response)
+  {
+    try
+    {
+      var content = await response.Content.ReadAsStringAsync();
+
+      if (string.IsNullOrWhiteSpace(content))
+        return null;
+
+      using var json = JsonDocument.Parse(content);
+
+      if (json.RootElement.TryGetProperty("status", out var status)
+          && status.TryGetProperty("message", out var message))
+      {
+        return message.GetString();
+      }
+
+      return content.Length > 240 ? $"{content[..240]}..." : content;
+    }
+    catch
+    {
+      return null;
+    }
+  }
+
+  private static string FormatPuuid(string puuid)
+  {
+    if (string.IsNullOrWhiteSpace(puuid))
+      return "(PUUID vazio)";
+
+    return puuid.Length <= 12 ? puuid : $"{puuid[..8]}...";
+  }
 }

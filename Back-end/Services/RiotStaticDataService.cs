@@ -24,9 +24,12 @@ public class RiotStaticDataService : IRiotStaticDataService
         if (_cache.TryGetValue(cacheKey, out List<DataDragonRuneTree>? cachedRunes))
             return cachedRunes!;
 
-        var runes = await _httpClient
-            .GetFromJsonAsync<List<DataDragonRuneTree>>(
-                DataDragonHelper.GetRunes());
+        var runes = await GetDataDragonJsonAsync<List<DataDragonRuneTree>>(
+            DataDragonHelper.GetRunes(),
+            "buscar runas no Data Dragon");
+
+        if (runes == null || runes.Count == 0)
+            throw new InvalidOperationException("O Data Dragon retornou uma lista vazia de runas.");
 
         _cache.Set(cacheKey, runes, new MemoryCacheEntryOptions
         {
@@ -43,9 +46,12 @@ public class RiotStaticDataService : IRiotStaticDataService
         if (_cache.TryGetValue(cacheKey, out DataDragonChampionResponse? cachedChampions))
             return cachedChampions;
 
-        var champions = await _httpClient
-            .GetFromJsonAsync<DataDragonChampionResponse>(
-                DataDragonHelper.GetChampions());
+        var champions = await GetDataDragonJsonAsync<DataDragonChampionResponse>(
+            DataDragonHelper.GetChampions(),
+            "buscar campeões no Data Dragon");
+
+        if (champions == null || champions.Data.Count == 0)
+            throw new InvalidOperationException("O Data Dragon retornou uma lista vazia de campeões.");
 
         _cache.Set(cacheKey, champions, new MemoryCacheEntryOptions
         {
@@ -80,9 +86,12 @@ public class RiotStaticDataService : IRiotStaticDataService
 
         if (!_cache.TryGetValue(cacheKey, out DataDragonSummonerSpellResponse? cachedSpells))
         {
-            cachedSpells = await _httpClient
-                .GetFromJsonAsync<DataDragonSummonerSpellResponse>(
-                    DataDragonHelper.GetSummonerSpells());
+            cachedSpells = await GetDataDragonJsonAsync<DataDragonSummonerSpellResponse>(
+                DataDragonHelper.GetSummonerSpells(),
+                "buscar feitiços de invocador no Data Dragon");
+
+            if (cachedSpells == null || cachedSpells.Data.Count == 0)
+                throw new InvalidOperationException("O Data Dragon retornou uma lista vazia de feitiços de invocador.");
 
             _cache.Set(cacheKey, cachedSpells, new MemoryCacheEntryOptions
             {
@@ -128,5 +137,32 @@ public class RiotStaticDataService : IRiotStaticDataService
             Name = style.Name,
             IconUrl = DataDragonHelper.GetRuneIcon(style.Icon)
         };
+    }
+
+    private async Task<T?> GetDataDragonJsonAsync<T>(string url, string operation)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<T>(url);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(
+                $"Erro ao {operation}. Falha HTTP ao consultar {url}. Detalhes: {ex.Message}",
+                ex,
+                ex.StatusCode);
+        }
+        catch (TaskCanceledException ex)
+        {
+            throw new TimeoutException(
+                $"Erro ao {operation}. A consulta ao Data Dragon excedeu o tempo limite. URL: {url}",
+                ex);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            throw new InvalidOperationException(
+                $"Erro ao {operation}. O Data Dragon retornou um JSON em formato inesperado. URL: {url}. Detalhes: {ex.Message}",
+                ex);
+        }
     }
 }
