@@ -9,7 +9,7 @@ public class StatsController : Controller
 {
   private readonly IPlayerDashboardService _playerDashboardService;
 
-  public StatsController (IPlayerDashboardService playerDashboardService)
+  public StatsController(IPlayerDashboardService playerDashboardService)
   {
     _playerDashboardService = playerDashboardService;
   }
@@ -29,6 +29,17 @@ public class StatsController : Controller
   public async Task<IActionResult> GetMatchDetails(string matchId, [FromQuery] string puuid)
   {
     var result = await _playerDashboardService.GetMatchDetails(matchId, puuid);
+
+    if (!result.Result)
+      return BadRequest(result);
+
+    return Ok(result);
+  }
+
+  [HttpGet("match/activematch")]
+  public async Task<IActionResult> GetActiveMatch([FromQuery] string puuid)
+  {
+    var result = await _playerDashboardService.GetActiveMatch(puuid);
 
     if (!result.Result)
       return BadRequest(result);
