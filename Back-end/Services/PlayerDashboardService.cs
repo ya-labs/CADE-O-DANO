@@ -196,7 +196,28 @@ public class PlayerDashboardService : IPlayerDashboardService
       if (activeMatch == null)
         return ServiceResult<ActiveMatchDto>.Fail("Nenhuma partida ativa encontrada para este jogador.");
 
-      var dto = _mapper.Map<ActiveMatchDto>(activeMatch);
+      var participantsTasks = activeMatch.Participants.Select(BuildActiveMatchParticipant);
+      var participants = await Task.WhenAll(participantsTasks);
+
+      var teamTasks = participants
+        .GroupBy(participant => participant.TeamId)
+        .OrderBy(group => group.Key)
+        .Select(async group => new ActiveMatchTeamDto
+        {
+          TeamId = group.Key,
+          Participants = group.ToList(),
+          Bans = await BuildActiveMatchBans(activeMatch.Bans, group.Key)
+        });
+
+      var teams = (await Task.WhenAll(teamTasks)).ToList();
+
+      var dto = new ActiveMatchDto
+      {
+        GameQueueName = activeMatch.GameQueueConfigId,
+        QueueType = RiotExtensions.GetQueueDescription(activeMatch.GameQueueConfigId),
+        GameStartTime = FormatHelper.FormatUnixMilliseconds(activeMatch.GameStartTime),
+        Teams = teams
+      };
 
       return ServiceResult<ActiveMatchDto>.Success(dto);
     }
@@ -204,5 +225,65 @@ public class PlayerDashboardService : IPlayerDashboardService
     {
       return ServiceResult<ActiveMatchDto>.Fail($"Erro ao buscar partida ativa! {ex.Message}");
     }
+  }
+
+  private async Task<ActiveMatchParticipantDto> BuildActiveMatchParticipant(ActiveMatchParticipant participant)
+  {
+    var champion = await _riotStaticDataService.GetChampionByIdAsync(participant.ChampionId);
+    var spell1 = await _riotStaticDataService.GetSummonerSpellByIdAsync(participant.Spell1Id);
+    var spell2 = await _riotStaticDataService.GetSummonerSpellByIdAsync(participant.Spell2Id);
+    var primaryTree = await _riotStaticDataService.GetRuneStyleAsync(participant.Perks?.PerkStyle ?? 0);
+    var secondaryTree = await _riotStaticDataService.GetRuneStyleAsync(participant.Perks?.PerkSubStyle ?? 0);
+
+    var perkRunes = await Task.WhenAll(
+      (participant.Perks?.PerkIds ?? []).Select(perkId => _riotStaticDataService.GetRuneAsync(perkId)));
+
+    var selectedRunes = perkRunes
+      .Where(rune => !string.IsNullOrWhiteSpace(rune.Name))
+      .ToList();
+
+    var championId = champion?.Id ?? string.Empty;
+
+    return new ActiveMatchParticipantDto
+    {
+      Puuid = participant.Puuid,
+      TeamId = participant.TeamId,
+      RiotId = participant.RiotId,
+      ChampionName = champion?.Name ?? "Desconhecido",
+      ChampionIconUrl = string.IsNullOrWhiteSpace(championId) ? string.Empty : DataDragonHelper.GetChampionIcon(championId),
+      ChampionSplashArtUrl = string.IsNullOrWhiteSpace(championId) ? string.Empty : DataDragonHelper.GetChampionSplashArt(championId),
+      Spell1Name = spell1?.Name ?? string.Empty,
+      Spell1IconUrl = spell1 == null ? string.Empty : DataDragonHelper.GetSummonerSpellIcon(spell1.Image.Full),
+      Spell2Name = spell2?.Name ?? string.Empty,
+      Spell2IconUrl = spell2 == null ? string.Empty : DataDragonHelper.GetSummonerSpellIcon(spell2.Image.Full),
+      Perks = new ActiveMatchPerksDto
+      {
+        PerkIds = participant.Perks?.PerkIds ?? [],
+        PerkStyle = participant.Perks?.PerkStyle ?? 0,
+        PerkSubStyle = participant.Perks?.PerkSubStyle ?? 0,
+        PrimaryTree = primaryTree,
+        SecondaryTree = secondaryTree,
+        PrimaryPerkRunes = selectedRunes.Take(4).ToList(),
+        SecondaryPerkRunes = selectedRunes.Skip(4).Take(2).ToList()
+      }
+    };
+  }
+
+  private async Task<List<BanDto>> BuildActiveMatchBans(List<ActiveMatchBan> bans, int teamId)
+  {
+    var banTasks = bans
+      .Where(ban => ban.TeamId == teamId)
+      .Select(async ban =>
+      {
+        var champion = await _riotStaticDataService.GetChampionByIdAsync(ban.ChampionId);
+
+        return new BanDto
+        {
+          ChampionName = champion?.Name,
+          ChampionIconUrl = champion == null ? null : DataDragonHelper.GetChampionIcon(champion.Id)
+        };
+      });
+
+    return (await Task.WhenAll(banTasks)).ToList();
   }
 }

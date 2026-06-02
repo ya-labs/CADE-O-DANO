@@ -13,4 +13,5 @@ public interface IRiotApiService
   public Task<List<PlayerMasteriesDto>> GetPlayerMasteriesByPuuid(string puuid);
   public Task<List<SummonerEloDto>> GetSummonerEloByPuuid(string puuid);
   public Task<RiotMatchResponse> GetMatchById(string matchId);
+  public Task<ActiveMatchResponse?> GetActiveMatchByPuuid(string puuid);
 }

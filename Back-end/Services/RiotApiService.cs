@@ -177,4 +177,17 @@ public class RiotApiService : IRiotApiService
     return matchData!;
   }
 
+  public async Task<ActiveMatchResponse?> GetActiveMatchByPuuid(string puuid)
+  {
+    var response = await _httpClient.GetAsync(RiotUrlBuilder.GetActiveMatchByPuuid(puuid));
+
+    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+      return null;
+
+    if (!response.IsSuccessStatusCode)
+      throw new Exception("Não foi possível buscar a partida ativa.");
+
+    return await response.Content.ReadFromJsonAsync<ActiveMatchResponse>();
+  }
+
 }

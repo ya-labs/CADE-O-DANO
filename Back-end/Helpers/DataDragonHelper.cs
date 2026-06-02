@@ -28,6 +28,12 @@ public class DataDragonHelper
     public static string GetChampions()
         => $"https://ddragon.leagueoflegends.com/cdn/{version}/data/pt_BR/champion.json";
 
+    public static string GetSummonerSpells()
+        => $"https://ddragon.leagueoflegends.com/cdn/{version}/data/pt_BR/summoner.json";
+
+    public static string GetSummonerSpellIcon(string imageFull)
+        => $"https://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{imageFull}";
+
     public static string GetMasteryIcon(int masteryLevel)
     {
         var level = Math.Min(masteryLevel, 10);
