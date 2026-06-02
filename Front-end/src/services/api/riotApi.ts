@@ -1,4 +1,6 @@
 import type {
+  SearchActiveMatchApiResponse,
+  SearchActiveMatchResponse,
   SearchHistoryApiResponse,
   SearchHistoryResponse,
   SearchMatchApiResponse,
@@ -36,4 +38,12 @@ export const buscarMatch = (
   const matchRequestUrl = `match/${matchId}?puuid=${puuid}`;
 
   return fetchEndpoint<SearchMatchApiResponse>(matchRequestUrl, "detalhes da partida");
+};
+
+export const buscarActiveMatch = (
+  puuid: string,
+): Promise<SearchActiveMatchResponse> => {
+  const matchRequestUrl = `match/activematch?puuid=${puuid}`;
+
+  return fetchEndpoint<SearchActiveMatchApiResponse>(matchRequestUrl, "partida ativa");
 };

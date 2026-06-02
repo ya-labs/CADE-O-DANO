@@ -812,6 +812,318 @@ input:focus-visible,
 .match-list > *:nth-child(6) { animation-delay: 200ms; }
 .match-list > *:nth-child(n + 7) { animation-delay: 240ms; }
 
+.match-list__active-match-card {
+  min-width: 0;
+}
+
+.active-match-card,
+.active-match-empty {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(65, 217, 255, 0.3);
+  border-left: 4px solid var(--cyan);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(65, 217, 255, 0.14), transparent 38%),
+    linear-gradient(90deg, rgba(8, 18, 34, 0.92), rgba(6, 10, 20, 0.88));
+  color: var(--text);
+  box-shadow:
+    0 16px 38px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.active-match-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.active-match-empty {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.active-match-card__header {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.active-match-card__title {
+  min-width: 0;
+}
+
+.active-match-card__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.active-match-card__header h2 {
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-match-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.active-match-card__meta span {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.065);
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.active-match-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-match-card__toggle {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(65, 217, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(65, 217, 255, 0.08);
+  color: var(--cyan);
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    background var(--motion-base) var(--ease-smooth),
+    border-color var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-card__toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(65, 217, 255, 0.46);
+  background: rgba(65, 217, 255, 0.14);
+}
+
+.active-match-card__toggle svg {
+  transition: transform var(--motion-base) var(--ease-out);
+}
+
+.active-match-card--expanded .active-match-card__toggle svg {
+  transform: rotate(180deg);
+}
+
+.active-match-card__summary {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(65, 217, 255, 0.18);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, rgba(65, 217, 255, 0.09), transparent 42%),
+    rgba(255, 255, 255, 0.055);
+}
+
+.active-match-card__summary > div span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.active-match-card__summary > div strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.active-match-card__player {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.active-match-card__details {
+  padding-top: 2px;
+  animation: contentRise 0.22s var(--ease-out) both;
+}
+
+.active-match-card__teams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.active-match-team {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.active-match-team__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.active-match-team__header strong {
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.active-match-team__header span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.active-match-team__participants {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.active-match-participant {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.058);
+}
+
+.active-match-participant--selected {
+  border-color: rgba(65, 217, 255, 0.32);
+  background:
+    linear-gradient(90deg, rgba(65, 217, 255, 0.12), transparent 58%),
+    rgba(255, 255, 255, 0.07);
+}
+
+.active-match-participant__champion {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(248, 213, 107, 0.34);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.active-match-participant__info {
+  min-width: 0;
+}
+
+.active-match-participant__info strong,
+.active-match-participant__info span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-match-participant__info strong {
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.active-match-participant__info span {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.active-match-participant__spells,
+.active-match-participant__runes,
+.active-match-team__ban-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.active-match-participant__spell,
+.active-match-participant__rune,
+.active-match-team__ban-icon,
+.active-match-team__empty-ban {
+  width: 23px;
+  height: 23px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(5, 9, 18, 0.78);
+  object-fit: cover;
+}
+
+.active-match-participant__rune {
+  border-radius: 50%;
+}
+
+.active-match-participant__rune--tree {
+  opacity: 0.82;
+}
+
+.active-match-team__bans {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.active-match-team__bans > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.active-match-team__empty-ban {
+  opacity: 0.42;
+}
+
 .history-page__content {
   display: grid;
   grid-template-columns: minmax(220px, 292px) minmax(0, 1fr);
@@ -3200,6 +3512,10 @@ input:focus-visible,
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .active-match-card__teams {
+    grid-template-columns: 1fr;
+  }
+
   .mastery-page__header {
     grid-template-columns: 1fr;
     align-items: start;
@@ -3279,6 +3595,48 @@ input:focus-visible,
 
   .history-insights {
     grid-template-columns: 1fr;
+  }
+
+  .active-match-card,
+  .active-match-empty {
+    padding: 14px;
+  }
+
+  .active-match-card__header {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .active-match-card__meta {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .active-match-empty {
+    align-items: flex-start;
+  }
+
+  .active-match-participant {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "champion info spells"
+      "champion info runes";
+  }
+
+  .active-match-participant__champion {
+    grid-area: champion;
+  }
+
+  .active-match-participant__info {
+    grid-area: info;
+  }
+
+  .active-match-participant__spells {
+    grid-area: spells;
+  }
+
+  .active-match-participant__runes {
+    grid-area: runes;
+    justify-content: flex-end;
   }
 
   .mastery-page__topbar {

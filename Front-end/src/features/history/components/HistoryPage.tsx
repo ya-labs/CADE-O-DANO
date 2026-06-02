@@ -1,25 +1,31 @@
 import { useState } from "react";
-import { ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, RefreshCw, ShieldBan, Swords } from "lucide-react";
 import type { MatchSummary } from "../../../types/match";
 import type { HighestDamageChampion, Mastery, MostPlayedChampion } from "../../../services/api/types";
 import BackButton from "../../../shared/components/BackButton";
 import FloatingAlert from "../../../shared/components/FloatingAlert";
 import RemoteImage from "../../../shared/components/RemoteImage";
 import MatchCard from "./MatchCard";
+import type { ActiveMatchDetail, ActiveMatchParticipant, ActiveMatchTeam } from "../../../types/matchDetail";
 
 type Props = {
     onBack: () => void;
     onShowMasteries: () => void;
-    onRefresh: () => Promise<void>;
+    onRefreshHistory: () => Promise<void>;
+    onRefreshActiveMatch: () => Promise<void>;
+    activeMatch: ActiveMatchDetail | null;
+    searchedPlayerPuuid: string | null;
     matches: MatchSummary[];
     mastery: Mastery | null;
     onSelectMatch: (matchId: string) => Promise<void>;
     isLoadingMatchDetails: boolean;
     isRefreshingHistory: boolean;
+    isRefreshingActiveMatch: boolean;
     matchError: string;
+    activeMatchError: string;
     mostPlayedChampions: MostPlayedChampion[];
     highestDamageChampions: HighestDamageChampion[];
-}
+};
 
 function formatLastPlayTime(lastPlayTime: number) {
     if (lastPlayTime <= 0) return "Hoje";
@@ -28,16 +34,245 @@ function formatLastPlayTime(lastPlayTime: number) {
     return `${lastPlayTime} dias`;
 }
 
+function getActiveTeamLabel(teamId: number) {
+    if (teamId === 100) return "Time azul";
+    if (teamId === 200) return "Time vermelho";
+
+    return `Time ${teamId}`;
+}
+
+function getActiveParticipantName(participant: ActiveMatchParticipant) {
+    return participant.riotId
+        || (participant.summonerName && participant.summonerHashtag
+            ? `${participant.summonerName}#${participant.summonerHashtag}`
+            : participant.summonerName)
+        || "Jogador desconhecido";
+}
+
+function findActivePlayer(activeMatch: ActiveMatchDetail, searchedPlayerPuuid: string | null) {
+    const participants = activeMatch.teams.flatMap((team) => team.participants);
+
+    return participants.find((participant) => participant.puuid === searchedPlayerPuuid)
+        ?? participants[0]
+        ?? null;
+}
+
+function ActiveMatchParticipantRow({
+    participant,
+    isSelected = false,
+}: {
+    participant: ActiveMatchParticipant;
+    isSelected?: boolean;
+}) {
+    const championName = participant.championName ?? "Campeão desconhecido";
+    const primaryTree = participant.perks?.primaryTree ?? participant.perks?.primaryStyle;
+    const keystone = participant.perks?.primaryPerkRunes?.[0] ?? participant.perks?.keystone;
+
+    return (
+        <li className={isSelected ? "active-match-participant active-match-participant--selected" : "active-match-participant"}>
+            <RemoteImage
+                className="active-match-participant__champion"
+                src={participant.championIconUrl}
+                alt={`Ícone do campeão ${championName}`}
+            />
+
+            <div className="active-match-participant__info">
+                <strong>{getActiveParticipantName(participant)}</strong>
+                <span>{championName}</span>
+            </div>
+
+            <div className="active-match-participant__spells" aria-label="Feitiços de invocador">
+                <RemoteImage
+                    className="active-match-participant__spell"
+                    src={participant.spell1IconUrl}
+                    alt={participant.spell1Name ?? "Feitiço 1"}
+                />
+                <RemoteImage
+                    className="active-match-participant__spell"
+                    src={participant.spell2IconUrl}
+                    alt={participant.spell2Name ?? "Feitiço 2"}
+                />
+            </div>
+
+            <div className="active-match-participant__runes" aria-label="Runas principais">
+                {keystone?.iconUrl && (
+                    <RemoteImage
+                        className="active-match-participant__rune"
+                        src={keystone.iconUrl}
+                        alt={keystone.name}
+                    />
+                )}
+
+                {primaryTree?.iconUrl && (
+                    <RemoteImage
+                        className="active-match-participant__rune active-match-participant__rune--tree"
+                        src={primaryTree.iconUrl}
+                        alt={primaryTree.name}
+                    />
+                )}
+            </div>
+        </li>
+    );
+}
+
+function ActiveMatchTeamColumn({
+    team,
+    searchedPlayerPuuid,
+}: {
+    team: ActiveMatchTeam;
+    searchedPlayerPuuid: string | null;
+}) {
+    return (
+        <section className="active-match-team" aria-label={getActiveTeamLabel(team.teamId)}>
+            <header className="active-match-team__header">
+                <strong>{getActiveTeamLabel(team.teamId)}</strong>
+                <span>{team.participants.length} jogadores</span>
+            </header>
+
+            <ul className="active-match-team__participants">
+                {team.participants.map((participant) => (
+                    <ActiveMatchParticipantRow
+                        key={participant.puuid ?? `${participant.teamId}-${participant.riotId}-${participant.championName}`}
+                        participant={participant}
+                        isSelected={participant.puuid === searchedPlayerPuuid}
+                    />
+                ))}
+            </ul>
+
+            {team.bans.length > 0 && (
+                <div className="active-match-team__bans" aria-label="Campeões banidos">
+                    <span>
+                        <ShieldBan size={14} strokeWidth={2.4} aria-hidden="true" />
+                        Bans
+                    </span>
+
+                    <div className="active-match-team__ban-list">
+                        {team.bans.map((ban, index) => (
+                            ban.championIconUrl ? (
+                                <RemoteImage
+                                    key={`${ban.championName}-${index}`}
+                                    className="active-match-team__ban-icon"
+                                    src={ban.championIconUrl}
+                                    alt={ban.championName ?? "Campeão banido"}
+                                />
+                            ) : (
+                                <span
+                                    key={`empty-ban-${index}`}
+                                    className="active-match-team__empty-ban"
+                                    aria-label="Ban não informado"
+                                />
+                            )
+                        ))}
+                    </div>
+                </div>
+            )}
+        </section>
+    );
+}
+
+function ActiveMatchCard({
+    activeMatch,
+    searchedPlayerPuuid,
+    isRefreshingActiveMatch,
+    onRefreshActiveMatch,
+}: {
+    activeMatch: ActiveMatchDetail;
+    searchedPlayerPuuid: string | null;
+    isRefreshingActiveMatch: boolean;
+    onRefreshActiveMatch: () => Promise<void>;
+}) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const activePlayer = findActivePlayer(activeMatch, searchedPlayerPuuid);
+    const activePlayerTeamLabel = activePlayer ? getActiveTeamLabel(activePlayer.teamId) : "";
+
+    return (
+        <article className={isExpanded ? "active-match-card active-match-card--expanded" : "active-match-card"}>
+            <header className="active-match-card__header">
+                <div className="active-match-card__title">
+                    <p className="active-match-card__eyebrow">
+                        <Swords size={16} strokeWidth={2.4} aria-hidden="true" />
+                        Partida ativa
+                    </p>
+                    <h2>{activeMatch.queueType}</h2>
+                </div>
+
+                <div className="active-match-card__meta">
+                    <span>
+                        <Clock size={15} strokeWidth={2.4} aria-hidden="true" />
+                        Início: {activeMatch.gameStartTime}
+                    </span>
+                </div>
+
+                <div className="active-match-card__actions">
+                    <button
+                        type="button"
+                        className="active-match-card__toggle"
+                        onClick={() => setIsExpanded((currentValue) => !currentValue)}
+                        aria-expanded={isExpanded}
+                        aria-controls="active-match-details"
+                        title={isExpanded ? "Ocultar participantes" : "Ver participantes"}
+                    >
+                        <ChevronDown size={19} strokeWidth={2.4} aria-hidden="true" />
+                    </button>
+
+                    <button
+                        type="button"
+                        className={isRefreshingActiveMatch ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
+                        onClick={onRefreshActiveMatch}
+                        disabled={isRefreshingActiveMatch}
+                        aria-label="Atualizar partida ativa"
+                        title="Atualizar partida ativa"
+                    >
+                        <RefreshCw size={20} strokeWidth={2.4} aria-hidden="true" />
+                    </button>
+                </div>
+            </header>
+
+            {activePlayer && (
+                <div className="active-match-card__summary">
+                    <div>
+                        <span>Jogador</span>
+                        <strong>{activePlayerTeamLabel}</strong>
+                    </div>
+
+                    <ul className="active-match-card__player">
+                        <ActiveMatchParticipantRow participant={activePlayer} isSelected />
+                    </ul>
+                </div>
+            )}
+
+            {isExpanded && (
+                <div className="active-match-card__details" id="active-match-details">
+                    <div className="active-match-card__teams">
+                        {activeMatch.teams.map((team) => (
+                            <ActiveMatchTeamColumn
+                                key={team.teamId}
+                                team={team}
+                                searchedPlayerPuuid={searchedPlayerPuuid}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+        </article>
+    );
+}
+
 function HistoryPage ({
     onBack,
     onShowMasteries,
-    onRefresh,
+    onRefreshHistory,
+    onRefreshActiveMatch,
+    activeMatch,
+    searchedPlayerPuuid,
     matches,
     mastery,
     onSelectMatch,
     isLoadingMatchDetails,
     isRefreshingHistory,
+    isRefreshingActiveMatch,
     matchError,
+    activeMatchError,
     mostPlayedChampions,
     highestDamageChampions
 }: Props) {
@@ -49,13 +284,15 @@ function HistoryPage ({
 
     const [showDamageText, setShowDamageText] = useState(false);
     const feedbackMessage = matchError
+        || activeMatchError
         || (isLoadingMatchDetails ? "Carregando detalhes da partida..." : "")
-        || (isRefreshingHistory ? "Atualizando histórico..." : "");
+        || (isRefreshingHistory ? "Atualizando histórico..." : "")
+        || (isRefreshingActiveMatch ? "Buscando partida ativa..." : "");
 
     return (
         <div className="history-page">
             <FloatingAlert
-                variant={matchError ? "error" : "loading"}
+                variant={matchError || activeMatchError ? "error" : "loading"}
                 message={feedbackMessage}
             />
 
@@ -66,7 +303,7 @@ function HistoryPage ({
                     <button
                         type="button"
                         className={isRefreshingHistory ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
-                        onClick={onRefresh}
+                        onClick={onRefreshHistory}
                         disabled={isRefreshingHistory}
                         aria-label="Recarregar histórico"
                         title="Recarregar histórico"
@@ -169,6 +406,38 @@ function HistoryPage ({
                 </aside>
 
                 <section className="match-list">
+                    <div className="match-list__active-match-card">
+                        {activeMatch ? (
+                            <ActiveMatchCard
+                                activeMatch={activeMatch}
+                                searchedPlayerPuuid={searchedPlayerPuuid}
+                                isRefreshingActiveMatch={isRefreshingActiveMatch}
+                                onRefreshActiveMatch={onRefreshActiveMatch}
+                            />
+                        ) : (
+                            <div className="active-match-empty">
+                                <div>
+                                    <p className="active-match-card__eyebrow">
+                                        <Swords size={16} strokeWidth={2.4} aria-hidden="true" />
+                                        Partida ativa
+                                    </p>
+                                    <p className="empty-state">Jogador não está em uma partida</p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className={isRefreshingActiveMatch ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
+                                    onClick={onRefreshActiveMatch}
+                                    disabled={isRefreshingActiveMatch}
+                                    aria-label="Buscar partida ativa"
+                                    title="Buscar partida ativa"
+                                >
+                                    <RefreshCw size={20} strokeWidth={2.4} aria-hidden="true" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
                     {matches.length > 0 ? (
                         matches.map((match) => (
                             <MatchCard

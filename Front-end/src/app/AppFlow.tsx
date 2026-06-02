@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 /* SERVICES */
-import { buscarHistorico, buscarMatch } from "../services/api/riotApi";
+import { buscarHistorico, buscarMatch, buscarActiveMatch } from "../services/api/riotApi";
 
 /* TIPOS */
 import type { MatchDetail } from "../types/matchDetail";
@@ -40,11 +40,12 @@ function AppFlow () {
 
     const [screen, setScreen] = useState<Screen>(() => playerData ? "historico" : "login");
 
-    const [searchedPlayers, setSearchedPlayers] = useState<StoredPlayer[]>([]);
+    const [searchedPlayers, setSearchedPlayers] = useState<StoredPlayer[]>(() => getSearchedPlayers());
 
     const historyRequest = useRequestState();
     const participantRequest = useRequestState();
     const matchRequest = useRequestState();
+    const activeMatchRequest = useRequestState();
     
     const playerProfile = playerData?.profile;
     const rankedStats = playerData?.rankedStats;
@@ -53,8 +54,6 @@ function AppFlow () {
     const performanceSummary = playerData?.performanceSummary;
 
     useEffect(() => {
-        setSearchedPlayers(getSearchedPlayers());
-
         const storedPlayer = getCurrentPlayer();
 
         if (!storedPlayer) return;
@@ -71,6 +70,7 @@ function AppFlow () {
         setMatchDetails(null);
         participantRequest.clearError();
         matchRequest.clearError();
+        activeMatchRequest.clearError();
 
         const response = await historyRequest.run(() =>
             buscarHistorico(nick, tag)
@@ -122,6 +122,7 @@ function AppFlow () {
     async function handleSelectMatch(matchId: string) {
         historyRequest.clearError();
         participantRequest.clearError();
+        activeMatchRequest.clearError();
         
         if (!playerProfile?.puuid) return;
 
@@ -136,6 +137,31 @@ function AppFlow () {
         setScreen("detalhes");
     };
 
+    async function handleSearchActiveMatch() {
+        historyRequest.clearError();
+        participantRequest.clearError();
+        matchRequest.clearError();
+        
+        if (!playerProfile?.puuid) return;
+
+        const response = await activeMatchRequest.run(() =>
+            buscarActiveMatch(playerProfile.puuid)
+        );
+
+        if (!response || !playerData) return;
+
+        const updatedPlayerData: SearchHistoryData = {
+            ...playerData,
+            matches: {
+                ...playerData.matches,
+                activeMatch: response.data,
+            },
+        };
+
+        setPlayerData(updatedPlayerData);
+        saveCurrentPlayerHistory(updatedPlayerData);
+    };
+
     async function handleRefreshHistory() {
         const storedPlayer = getCurrentPlayer();
 
@@ -143,6 +169,10 @@ function AppFlow () {
             storedPlayer?.nick || null,
             storedPlayer?.tag || null,
         );
+    }
+
+    async function handleRefreshActiveMatch() {
+        await handleSearchActiveMatch();
     }
 
     function handleBackToLogin() {
@@ -182,10 +212,15 @@ function AppFlow () {
                     <HistoryPage
                         onBack={handleBackToLogin}
                         onShowMasteries={()=> setScreen("maestrias")}
-                        onRefresh={handleRefreshHistory}
+                        onRefreshHistory={handleRefreshHistory}
+                        onRefreshActiveMatch={handleRefreshActiveMatch}
+                        activeMatch={playerMatches?.activeMatch || null}
+                        searchedPlayerPuuid={playerProfile?.puuid || null}
                         matches={playerMatches?.recentMatches || []}
                         mastery={playerMasteries?.[0] || null}
                         isRefreshingHistory={historyRequest.loading}
+                        isRefreshingActiveMatch={activeMatchRequest.loading}
+                        activeMatchError={activeMatchRequest.error}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
                         onSelectMatch={handleSelectMatch}
