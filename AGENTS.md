@@ -136,6 +136,8 @@ A descrição deve ser clara, curta e em português.
 
 Para alterações apenas de documentação, use `docs: descrição curta`, sem repetir `docs/docs`.
 
+Como o repositório usa `Squash and merge` com o título do Pull Request como mensagem padrão do commit final, a IA deve dar atenção especial ao título do PR.
+
 Evite mensagens genéricas como:
 
 ```txt
@@ -146,6 +148,25 @@ update
 ```
 
 ## Pull Requests
+
+O título do Pull Request deve seguir o padrão:
+
+```txt
+tipo/area: descrição curta (#numero-da-issue)
+```
+
+Exemplos:
+
+```txt
+feat/back: trazer partida em tempo real (#17)
+feat/front: criar card da partida em tempo real (#18)
+fix/back: corrigir cálculo de dano (#22)
+docs: atualizar fluxo de trabalho (#31)
+```
+
+Para documentação, use apenas `docs: descrição curta (#numero)`.
+
+Esse padrão é importante porque o projeto usa `Squash and merge` com o título do PR como mensagem padrão do commit final.
 
 Ao criar ou orientar um Pull Request, use a estrutura:
 

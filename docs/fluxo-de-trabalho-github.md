@@ -199,6 +199,8 @@ Regras:
 - Use letras minúsculas no prefixo.
 - Não use mensagens genéricas como `ajustes`, `teste` ou `mudanças`.
 
+Como o repositório usa `Squash and merge` com o título do Pull Request como mensagem padrão do commit final, o título do PR deve seguir o padrão definido na seção de Pull Requests.
+
 ## Fluxo de desenvolvimento
 
 1. Criar a issue.
@@ -219,19 +221,30 @@ Regras:
 
 O Pull Request deve explicar o que foi feito e deixar claro o impacto da alteração.
 
-Título recomendado:
+### Título do Pull Request
+
+O título do Pull Request deve seguir o padrão abaixo, porque ele será usado como mensagem do commit final no `Squash and merge`.
 
 ```txt
-Tipo: descrição curta da tarefa
+tipo/area: descrição curta (#numero-da-issue)
 ```
 
 Exemplos:
 
 ```txt
-Feature: partida ativa do jogador no perfil
-Fix: tratamento de jogador sem partida ativa
-Docs: fluxo de trabalho com GitHub Projects
+feat/back: trazer partida em tempo real (#17)
+feat/front: criar card da partida em tempo real (#18)
+fix/back: corrigir cálculo de dano (#22)
+docs: atualizar fluxo de trabalho (#31)
 ```
+
+Regras:
+
+- Use `feat/front`, `feat/back`, `fix/front`, `fix/back`, `refactor/front`, `refactor/back` ou variações equivalentes quando a alteração estiver ligada a uma área específica.
+- Para documentação, use apenas `docs: descrição curta (#numero)`.
+- A descrição deve ser curta, objetiva e em português.
+- O número da issue deve aparecer no final do título entre parênteses.
+- Evite títulos genéricos como `Ajustes`, `Update docs` ou `Correções`.
 
 ### Template de Pull Request
 
