@@ -1404,7 +1404,22 @@ input:focus-visible,
 }
 
 .active-match-team__empty-ban {
-  opacity: 0.42;
+  position: relative;
+  display: inline-block;
+  opacity: 1;
+  border-color: rgba(65, 217, 255, 0.28);
+  background:
+    linear-gradient(135deg, transparent 0 43%, rgba(65, 217, 255, 0.5) 46%, rgba(65, 217, 255, 0.5) 54%, transparent 57%),
+    rgba(65, 217, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.active-match-team__empty-ban::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(65, 217, 255, 0.34);
+  border-radius: 50%;
 }
 
 @keyframes activeMatchDetailsEnter {
