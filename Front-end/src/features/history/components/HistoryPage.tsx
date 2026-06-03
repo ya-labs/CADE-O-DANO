@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Clock, RefreshCw, ShieldBan, Swords } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, RefreshCw, Search, ShieldBan, Swords } from "lucide-react";
 import type { MatchSummary } from "../../../types/match";
 import type { HighestDamageChampion, Mastery, MostPlayedChampion } from "../../../services/api/types";
 import BackButton from "../../../shared/components/BackButton";
@@ -328,6 +328,13 @@ function HistoryPage ({
 }: Props) {
     const [nick, setNick] = useState("");
     const [tag, setTag] = useState("");
+    const canSearchParticipant = Boolean(nick.trim() && tag.trim());
+
+    function handleSearchParticipant() {
+        if (!canSearchParticipant) return;
+
+        onSearchParticipant(nick, tag);
+    }
 
     const maxDamageInList = Math.max(...matches.map((match) => match.totalDamage), 0);
     const matchesWithoutRemake = matches.filter((match) => match.result !== 2);
@@ -355,28 +362,46 @@ function HistoryPage ({
                 <div className="history-page__search">
                     <input
                         className="history-page__search-nick-input"
+                        placeholder="Usuário"
+                        autoComplete="off"
+                        value={nick}
                         onChange={(e) => setNick(e.target.value)}
-                        type="text" 
+                        onKeyDown={(event) => {
+                            if (event.key !== "Enter" || !canSearchParticipant) return;
+                            handleSearchParticipant();
+                        }}
+                        type="text"
                     />
 
                     <div className="history-page__search-tag-field">
                         <span className="history-page__search-tag-hashtag">#</span>
                         <input
                             className="history-page__search-tag-input"
+                            placeholder="BR1"
+                            autoComplete="off"
+                            value={tag}
                             onChange={(e) => setTag(e.target.value)}
-                            type="text" 
+                            onKeyDown={(event) => {
+                                if (event.key !== "Enter" || !canSearchParticipant) return;
+                                handleSearchParticipant();
+                            }}
+                            type="text"
                         />
                     </div>
 
                     <button
                         type="button"
                         className={isRefreshingHistory ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
-                        onClick={() => onSearchParticipant(nick, tag)}
-                        disabled={isRefreshingHistory}
-                        aria-label="Recarregar histórico"
-                        title="Recarregar histórico"
+                        onClick={handleSearchParticipant}
+                        disabled={isRefreshingHistory || !canSearchParticipant}
+                        aria-label="Pesquisar jogador"
+                        title="Pesquisar jogador"
                     >
-                        <></>
+                        {isRefreshingHistory ? (
+                            <RefreshCw size={20} strokeWidth={2.4} aria-hidden="true" />
+                        ) : (
+                            <Search size={20} strokeWidth={2.4} aria-hidden="true" />
+                        )}
                     </button>
                 </div>
 
