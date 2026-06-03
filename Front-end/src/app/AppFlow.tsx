@@ -233,6 +233,7 @@ function AppFlow () {
                         mastery={playerMasteries?.[0] || null}
                         onSearchParticipant={handleSearchParticipant}
                         isRefreshingHistory={historyRequest.loading}
+                        isSearchingParticipant={participantRequest.loading}
                         isRefreshingActiveMatch={activeMatchRequest.loading}
                         activeMatchError={activeMatchRequest.error}
                         isLoadingMatchDetails={matchRequest.loading}
