@@ -818,6 +818,7 @@ input:focus-visible,
 
 .active-match-card,
 .active-match-empty {
+  position: relative;
   width: 100%;
   overflow: hidden;
   border: 1px solid rgba(65, 217, 255, 0.3);
@@ -830,9 +831,47 @@ input:focus-visible,
   box-shadow:
     0 16px 38px rgba(0, 0, 0, 0.26),
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-smooth),
+    box-shadow var(--motion-base) var(--ease-smooth),
+    background var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-card::before,
+.active-match-empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(65, 217, 255, 0.08) 48%, transparent 60%),
+    radial-gradient(circle at 14% 28%, rgba(65, 217, 255, 0.12), transparent 32%);
+  opacity: 0;
+  transform: translateX(-18%);
+  transition:
+    opacity var(--motion-base) var(--ease-smooth),
+    transform 0.55s var(--ease-out);
+}
+
+.active-match-card:hover,
+.active-match-empty:hover {
+  transform: translateY(-3px);
+  border-color: rgba(65, 217, 255, 0.52);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(65, 217, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.active-match-card:hover::before,
+.active-match-empty:hover::before {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .active-match-card {
+  position: relative;
   display: grid;
   gap: 12px;
   padding: 14px 16px;
@@ -848,6 +887,8 @@ input:focus-visible,
 }
 
 .active-match-card__header {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(180px, 1fr) auto auto;
   align-items: center;
@@ -867,6 +908,22 @@ input:focus-visible,
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  transition: color var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-card:hover .active-match-card__eyebrow {
+  color: #77edff;
+}
+
+.active-match-card__eyebrow svg {
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    filter var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-card:hover .active-match-card__eyebrow svg {
+  transform: rotate(-10deg) scale(1.08);
+  filter: drop-shadow(0 0 8px rgba(65, 217, 255, 0.4));
 }
 
 .active-match-card__header h2 {
@@ -900,6 +957,16 @@ input:focus-visible,
   font-size: 0.76rem;
   font-weight: 850;
   white-space: nowrap;
+  transition:
+    border-color var(--motion-base) var(--ease-smooth),
+    background var(--motion-base) var(--ease-smooth),
+    color var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-card__meta span:hover {
+  border-color: rgba(65, 217, 255, 0.34);
+  background: rgba(65, 217, 255, 0.1);
+  color: var(--text);
 }
 
 .active-match-card__actions {
@@ -922,13 +989,26 @@ input:focus-visible,
   transition:
     transform var(--motion-base) var(--ease-out),
     background var(--motion-base) var(--ease-smooth),
-    border-color var(--motion-base) var(--ease-smooth);
+    border-color var(--motion-base) var(--ease-smooth),
+    box-shadow var(--motion-base) var(--ease-smooth);
 }
 
 .active-match-card__toggle:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   border-color: rgba(65, 217, 255, 0.46);
   background: rgba(65, 217, 255, 0.14);
+  box-shadow: 0 0 18px rgba(65, 217, 255, 0.16);
+}
+
+.active-match-card__toggle:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.active-match-card__toggle:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 4px rgba(65, 217, 255, 0.16),
+    0 0 18px rgba(65, 217, 255, 0.18);
 }
 
 .active-match-card__toggle svg {
@@ -940,6 +1020,8 @@ input:focus-visible,
 }
 
 .active-match-card__summary {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   align-items: center;
@@ -950,6 +1032,16 @@ input:focus-visible,
   background:
     linear-gradient(90deg, rgba(65, 217, 255, 0.09), transparent 42%),
     rgba(255, 255, 255, 0.055);
+  transition:
+    border-color var(--motion-base) var(--ease-smooth),
+    background var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-card__summary:hover {
+  border-color: rgba(65, 217, 255, 0.32);
+  background:
+    linear-gradient(90deg, rgba(65, 217, 255, 0.14), transparent 48%),
+    rgba(255, 255, 255, 0.07);
 }
 
 .active-match-card__summary > div span {
@@ -977,8 +1069,11 @@ input:focus-visible,
 }
 
 .active-match-card__details {
+  position: relative;
+  z-index: 1;
   padding-top: 2px;
-  animation: contentRise 0.22s var(--ease-out) both;
+  transform-origin: top;
+  animation: activeMatchDetailsEnter 0.26s var(--ease-out) both;
 }
 
 .active-match-card__teams {
@@ -993,6 +1088,11 @@ input:focus-visible,
   min-width: 0;
   display: grid;
   gap: 10px;
+  transition: transform var(--motion-base) var(--ease-out);
+}
+
+.active-match-team:hover {
+  transform: translateY(-2px);
 }
 
 .active-match-team__header {
@@ -1024,17 +1124,77 @@ input:focus-visible,
 
 .active-match-participant {
   min-height: 52px;
+  display: block;
+}
+
+.active-match-participant__button {
+  position: relative;
+  width: 100%;
+  min-height: 52px;
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 9px;
   padding: 8px;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.105);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.058);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-smooth),
+    background var(--motion-base) var(--ease-smooth),
+    box-shadow var(--motion-base) var(--ease-smooth);
 }
 
-.active-match-participant--selected {
+.active-match-participant__button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 0 42%, rgba(255, 255, 255, 0.065) 50%, transparent 58%);
+  opacity: 0;
+  transform: translateX(-22%);
+  transition:
+    opacity var(--motion-base) var(--ease-smooth),
+    transform 0.42s var(--ease-out);
+}
+
+.active-match-participant__button:hover:not(:disabled) {
+  transform: translateX(4px);
+  border-color: rgba(65, 217, 255, 0.38);
+  background:
+    linear-gradient(90deg, rgba(65, 217, 255, 0.13), transparent 62%),
+    rgba(255, 255, 255, 0.074);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.active-match-participant__button:hover:not(:disabled)::after {
+  opacity: 1;
+  transform: translateX(18%);
+}
+
+.active-match-participant__button:active:not(:disabled) {
+  transform: translateX(2px) scale(0.992);
+}
+
+.active-match-participant__button:focus-visible {
+  outline: none;
+  border-color: rgba(65, 217, 255, 0.6);
+  box-shadow:
+    0 0 0 4px rgba(65, 217, 255, 0.14),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.active-match-participant__button:disabled {
+  cursor: default;
+  opacity: 0.52;
+}
+
+.active-match-participant--selected .active-match-participant__button {
   border-color: rgba(65, 217, 255, 0.32);
   background:
     linear-gradient(90deg, rgba(65, 217, 255, 0.12), transparent 58%),
@@ -1047,6 +1207,16 @@ input:focus-visible,
   border: 1px solid rgba(248, 213, 107, 0.34);
   border-radius: 50%;
   object-fit: cover;
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-smooth),
+    box-shadow var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-participant__button:hover:not(:disabled) .active-match-participant__champion {
+  transform: scale(1.08);
+  border-color: rgba(65, 217, 255, 0.58);
+  box-shadow: 0 0 18px rgba(65, 217, 255, 0.2);
 }
 
 .active-match-participant__info {
@@ -1065,6 +1235,11 @@ input:focus-visible,
   color: var(--text);
   font-size: 0.84rem;
   font-weight: 900;
+  transition: color var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-participant__button:hover:not(:disabled) .active-match-participant__info strong {
+  color: #e9fbff;
 }
 
 .active-match-participant__info span {
@@ -1086,20 +1261,34 @@ input:focus-visible,
 .active-match-participant__rune,
 .active-match-team__ban-icon,
 .active-match-team__empty-ban {
-  width: 23px;
-  height: 23px;
+  width: 25px;
+  height: 25px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 6px;
   background: rgba(5, 9, 18, 0.78);
   object-fit: cover;
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-smooth),
+    filter var(--motion-base) var(--ease-smooth);
+}
+
+.active-match-participant__button:hover:not(:disabled) .active-match-participant__spell,
+.active-match-participant__button:hover:not(:disabled) .active-match-participant__rune,
+.active-match-team__ban-icon:hover {
+  transform: translateY(-2px) scale(1.06);
+  border-color: rgba(65, 217, 255, 0.4);
+  filter: brightness(1.08);
 }
 
 .active-match-participant__rune {
   border-radius: 50%;
+  padding: 1px;
 }
 
 .active-match-participant__rune--tree {
   opacity: 0.82;
+  padding: 3px;
 }
 
 .active-match-team__bans {
@@ -1122,6 +1311,18 @@ input:focus-visible,
 
 .active-match-team__empty-ban {
   opacity: 0.42;
+}
+
+@keyframes activeMatchDetailsEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
 }
 
 .history-page__content {
@@ -3603,7 +3804,7 @@ input:focus-visible,
   }
 
   .active-match-card__header {
-    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .active-match-card__meta {
@@ -3615,7 +3816,11 @@ input:focus-visible,
     align-items: flex-start;
   }
 
-  .active-match-participant {
+  .active-match-card__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .active-match-participant__button {
     grid-template-columns: 42px minmax(0, 1fr) auto;
     grid-template-areas:
       "champion info spells"
