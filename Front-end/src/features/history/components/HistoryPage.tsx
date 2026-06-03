@@ -326,6 +326,9 @@ function HistoryPage ({
     mostPlayedChampions,
     highestDamageChampions
 }: Props) {
+    const [nick, setNick] = useState("");
+    const [tag, setTag] = useState("");
+
     const maxDamageInList = Math.max(...matches.map((match) => match.totalDamage), 0);
     const matchesWithoutRemake = matches.filter((match) => match.result !== 2);
     const minDamageInList = matchesWithoutRemake.length > 0
@@ -348,6 +351,34 @@ function HistoryPage ({
 
             <div className="history-page__topbar">
                 <BackButton onBack={onBack}/>
+
+                <div className="history-page__search">
+                    <input
+                        className="history-page__search-nick-input"
+                        onChange={(e) => setNick(e.target.value)}
+                        type="text" 
+                    />
+
+                    <div className="history-page__search-tag-field">
+                        <span className="history-page__search-tag-hashtag">#</span>
+                        <input
+                            className="history-page__search-tag-input"
+                            onChange={(e) => setTag(e.target.value)}
+                            type="text" 
+                        />
+                    </div>
+
+                    <button
+                        type="button"
+                        className={isRefreshingHistory ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
+                        onClick={() => onSearchParticipant(nick, tag)}
+                        disabled={isRefreshingHistory}
+                        aria-label="Recarregar histórico"
+                        title="Recarregar histórico"
+                    >
+                        <></>
+                    </button>
+                </div>
 
                 <div className="history-page__actions">
                     <button
