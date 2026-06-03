@@ -18,6 +18,7 @@ type Props = {
     matches: MatchSummary[];
     mastery: Mastery | null;
     onSelectMatch: (matchId: string) => Promise<void>;
+    onSearchParticipant: (nick: string, tag: string) => Promise<void>;
     isLoadingMatchDetails: boolean;
     isRefreshingHistory: boolean;
     isRefreshingActiveMatch: boolean;
@@ -49,6 +50,21 @@ function getActiveParticipantName(participant: ActiveMatchParticipant) {
         || "Jogador desconhecido";
 }
 
+function getParticipantSearchParams(participant: ActiveMatchParticipant) {
+    if (participant.summonerName && participant.summonerHashtag) {
+        return {
+            nick: participant.summonerName,
+            tag: participant.summonerHashtag,
+        };
+    }
+
+    const [nick, tag] = participant.riotId?.split("#") ?? [];
+
+    if (!nick || !tag) return null;
+
+    return { nick, tag };
+}
+
 function findActivePlayer(activeMatch: ActiveMatchDetail, searchedPlayerPuuid: string | null) {
     const participants = activeMatch.teams.flatMap((team) => team.participants);
 
@@ -60,57 +76,70 @@ function findActivePlayer(activeMatch: ActiveMatchDetail, searchedPlayerPuuid: s
 function ActiveMatchParticipantRow({
     participant,
     isSelected = false,
+    onSearchParticipant,
 }: {
     participant: ActiveMatchParticipant;
     isSelected?: boolean;
+    onSearchParticipant: (nick: string, tag: string) => Promise<void>;
 }) {
     const championName = participant.championName ?? "Campeão desconhecido";
     const primaryTree = participant.perks?.primaryTree ?? participant.perks?.primaryStyle;
     const keystone = participant.perks?.primaryPerkRunes?.[0] ?? participant.perks?.keystone;
+    const searchParams = getParticipantSearchParams(participant);
+    const participantName = getActiveParticipantName(participant);
 
     return (
         <li className={isSelected ? "active-match-participant active-match-participant--selected" : "active-match-participant"}>
-            <RemoteImage
-                className="active-match-participant__champion"
-                src={participant.championIconUrl}
-                alt={`Ícone do campeão ${championName}`}
-            />
-
-            <div className="active-match-participant__info">
-                <strong>{getActiveParticipantName(participant)}</strong>
-                <span>{championName}</span>
-            </div>
-
-            <div className="active-match-participant__spells" aria-label="Feitiços de invocador">
+            <button
+                type="button"
+                className="active-match-participant__button"
+                onClick={() => searchParams && onSearchParticipant(searchParams.nick, searchParams.tag)}
+                disabled={!searchParams}
+                aria-label={searchParams ? `Pesquisar jogador ${participantName}` : participantName}
+                title={searchParams ? `Pesquisar ${participantName}` : "Jogador sem Riot ID disponível"}
+            >
                 <RemoteImage
-                    className="active-match-participant__spell"
-                    src={participant.spell1IconUrl}
-                    alt={participant.spell1Name ?? "Feitiço 1"}
+                    className="active-match-participant__champion"
+                    src={participant.championIconUrl}
+                    alt={`Ícone do campeão ${championName}`}
                 />
-                <RemoteImage
-                    className="active-match-participant__spell"
-                    src={participant.spell2IconUrl}
-                    alt={participant.spell2Name ?? "Feitiço 2"}
-                />
-            </div>
 
-            <div className="active-match-participant__runes" aria-label="Runas principais">
-                {keystone?.iconUrl && (
-                    <RemoteImage
-                        className="active-match-participant__rune"
-                        src={keystone.iconUrl}
-                        alt={keystone.name}
-                    />
-                )}
+                <div className="active-match-participant__info">
+                    <strong>{participantName}</strong>
+                    <span>{championName}</span>
+                </div>
 
-                {primaryTree?.iconUrl && (
+                <div className="active-match-participant__spells" aria-label="Feitiços de invocador">
                     <RemoteImage
-                        className="active-match-participant__rune active-match-participant__rune--tree"
-                        src={primaryTree.iconUrl}
-                        alt={primaryTree.name}
+                        className="active-match-participant__spell"
+                        src={participant.spell1IconUrl}
+                        alt={participant.spell1Name ?? "Feitiço 1"}
                     />
-                )}
-            </div>
+                    <RemoteImage
+                        className="active-match-participant__spell"
+                        src={participant.spell2IconUrl}
+                        alt={participant.spell2Name ?? "Feitiço 2"}
+                    />
+                </div>
+
+                <div className="active-match-participant__runes" aria-label="Runas principais">
+                    {keystone?.iconUrl && (
+                        <RemoteImage
+                            className="active-match-participant__rune"
+                            src={keystone.iconUrl}
+                            alt={keystone.name}
+                        />
+                    )}
+
+                    {primaryTree?.iconUrl && (
+                        <RemoteImage
+                            className="active-match-participant__rune active-match-participant__rune--tree"
+                            src={primaryTree.iconUrl}
+                            alt={primaryTree.name}
+                        />
+                    )}
+                </div>
+            </button>
         </li>
     );
 }
@@ -118,9 +147,11 @@ function ActiveMatchParticipantRow({
 function ActiveMatchTeamColumn({
     team,
     searchedPlayerPuuid,
+    onSearchParticipant,
 }: {
     team: ActiveMatchTeam;
     searchedPlayerPuuid: string | null;
+    onSearchParticipant: (nick: string, tag: string) => Promise<void>;
 }) {
     return (
         <section className="active-match-team" aria-label={getActiveTeamLabel(team.teamId)}>
@@ -135,6 +166,7 @@ function ActiveMatchTeamColumn({
                         key={participant.puuid ?? `${participant.teamId}-${participant.riotId}-${participant.championName}`}
                         participant={participant}
                         isSelected={participant.puuid === searchedPlayerPuuid}
+                        onSearchParticipant={onSearchParticipant}
                     />
                 ))}
             </ul>
@@ -175,11 +207,13 @@ function ActiveMatchCard({
     searchedPlayerPuuid,
     isRefreshingActiveMatch,
     onRefreshActiveMatch,
+    onSearchParticipant,
 }: {
     activeMatch: ActiveMatchDetail;
     searchedPlayerPuuid: string | null;
     isRefreshingActiveMatch: boolean;
     onRefreshActiveMatch: () => Promise<void>;
+    onSearchParticipant: (nick: string, tag: string) => Promise<void>;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const activePlayer = findActivePlayer(activeMatch, searchedPlayerPuuid);
@@ -236,7 +270,11 @@ function ActiveMatchCard({
                     </div>
 
                     <ul className="active-match-card__player">
-                        <ActiveMatchParticipantRow participant={activePlayer} isSelected />
+                        <ActiveMatchParticipantRow
+                            participant={activePlayer}
+                            isSelected
+                            onSearchParticipant={onSearchParticipant}
+                        />
                     </ul>
                 </div>
             )}
@@ -249,6 +287,7 @@ function ActiveMatchCard({
                                 key={team.teamId}
                                 team={team}
                                 searchedPlayerPuuid={searchedPlayerPuuid}
+                                onSearchParticipant={onSearchParticipant}
                             />
                         ))}
                     </div>
@@ -268,6 +307,7 @@ function HistoryPage ({
     matches,
     mastery,
     onSelectMatch,
+    onSearchParticipant,
     isLoadingMatchDetails,
     isRefreshingHistory,
     isRefreshingActiveMatch,
@@ -413,6 +453,7 @@ function HistoryPage ({
                                 searchedPlayerPuuid={searchedPlayerPuuid}
                                 isRefreshingActiveMatch={isRefreshingActiveMatch}
                                 onRefreshActiveMatch={onRefreshActiveMatch}
+                                onSearchParticipant={onSearchParticipant}
                             />
                         ) : (
                             <div className="active-match-empty">

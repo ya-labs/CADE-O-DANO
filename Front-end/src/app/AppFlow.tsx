@@ -218,6 +218,7 @@ function AppFlow () {
                         searchedPlayerPuuid={playerProfile?.puuid || null}
                         matches={playerMatches?.recentMatches || []}
                         mastery={playerMasteries?.[0] || null}
+                        onSearchParticipant={handleSearchParticipant}
                         isRefreshingHistory={historyRequest.loading}
                         isRefreshingActiveMatch={activeMatchRequest.loading}
                         activeMatchError={activeMatchRequest.error}
