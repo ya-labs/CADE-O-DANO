@@ -61,10 +61,36 @@ type MatchTeam = {
     participants: Participant[];
 };
 
-type MatchMetadata = {
+type ActiveMatchBan = {
+    championName: string | null;
+    championIconUrl: string | null;
+};
+
+export type ActiveMatchParticipant = PlayerInfo & {
+    puuid: string | null;
+    riotId: string | null;
+    teamId: number;
+    championIconUrl: string;
+    championSplashArtUrl: string;
+    championName: string | null;
+    champLevel?: number;
+    spell1Name: string | null;
+    spell1IconUrl: string;
+    spell2Name: string | null;
+    spell2IconUrl: string;
+    perks: Runes | null;
+};
+
+export type ActiveMatchTeam = {
+    teamId: number;
+    participants: ActiveMatchParticipant[];
+    bans: ActiveMatchBan[];
+};
+
+type MatchMetadata = {  
     queueType: string;
     gameStartDate?: string;
-    gameDuration: string | number;
+    gameDuration?: string | number;
 };
 
 export type MatchDetail = MatchMetadata & {
@@ -72,4 +98,10 @@ export type MatchDetail = MatchMetadata & {
     totalKills?: number;
     playerWin: boolean;
     teams: MatchTeam[];
+};
+
+export type ActiveMatchDetail = MatchMetadata & {
+    gameQueueName: number;
+    gameStartTime: string;
+    teams: ActiveMatchTeam[];
 };

@@ -1,5 +1,5 @@
 import type { MatchSummary } from "../../types/match";
-import type { MatchDetail } from "../../types/matchDetail";
+import type { ActiveMatchDetail, MatchDetail } from "../../types/matchDetail";
 
 export type MostPlayedChampion = {
     championName: string;
@@ -43,6 +43,7 @@ type PlayerRankedStats = {
 
 type PlayerMatches = {
     recentMatches: MatchSummary[];
+    activeMatch?: ActiveMatchDetail | null;
 };
 
 type PlayerPerformanceSummary = {
@@ -74,6 +75,11 @@ export type SearchMatchApiResponse = {
     data: MatchDetail;
 };
 
+export type SearchActiveMatchApiResponse = {
+    data: ActiveMatchDetail;
+};
+
 export type SearchHistoryData = SearchHistoryApiData;
 export type SearchHistoryResponse = SearchHistoryApiResponse;
 export type SearchMatchResponse = SearchMatchApiResponse;
+export type SearchActiveMatchResponse = SearchActiveMatchApiResponse;
