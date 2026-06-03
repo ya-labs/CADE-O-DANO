@@ -87,16 +87,20 @@ function ActiveMatchParticipantRow({
     const keystone = participant.perks?.primaryPerkRunes?.[0] ?? participant.perks?.keystone;
     const searchParams = getParticipantSearchParams(participant);
     const participantName = getActiveParticipantName(participant);
+    const participantClassName = [
+        "active-match-participant",
+        isSelected ? "active-match-participant--selected" : "",
+        !searchParams ? "active-match-participant--unavailable" : "",
+    ].filter(Boolean).join(" ");
 
     return (
-        <li className={isSelected ? "active-match-participant active-match-participant--selected" : "active-match-participant"}>
+        <li className={participantClassName}>
             <button
                 type="button"
                 className="active-match-participant__button"
                 onClick={() => searchParams && onSearchParticipant(searchParams.nick, searchParams.tag)}
                 disabled={!searchParams}
                 aria-label={searchParams ? `Pesquisar jogador ${participantName}` : participantName}
-                title={searchParams ? `Pesquisar ${participantName}` : "Jogador sem Riot ID disponível"}
             >
                 <RemoteImage
                     className="active-match-participant__champion"
@@ -140,6 +144,12 @@ function ActiveMatchParticipantRow({
                     )}
                 </div>
             </button>
+
+            {!searchParams && (
+                <span className="active-match-participant__tooltip" role="tooltip">
+                    Jogador sem Riot ID disponível
+                </span>
+            )}
         </li>
     );
 }
