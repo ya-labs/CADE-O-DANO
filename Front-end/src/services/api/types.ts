@@ -76,7 +76,7 @@ export type SearchMatchApiResponse = {
 };
 
 export type SearchActiveMatchApiResponse = {
-    data: ActiveMatchDetail;
+    data: ActiveMatchDetail | null;
 };
 
 export type SearchHistoryData = SearchHistoryApiData;

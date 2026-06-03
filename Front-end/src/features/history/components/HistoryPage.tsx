@@ -263,7 +263,7 @@ function ActiveMatchCard({
                     <button
                         type="button"
                         className={isRefreshingActiveMatch ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
-                        onClick={onRefreshActiveMatch}
+                        onClick={() => void onRefreshActiveMatch()}
                         disabled={isRefreshingActiveMatch}
                         aria-label="Atualizar partida ativa"
                         title="Atualizar partida ativa"
@@ -543,7 +543,7 @@ function HistoryPage ({
                                 <button
                                     type="button"
                                     className={isRefreshingActiveMatch ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
-                                    onClick={onRefreshActiveMatch}
+                                    onClick={() => void onRefreshActiveMatch()}
                                     disabled={isInteractionBlocked || isRefreshingActiveMatch}
                                     aria-label="Buscar partida ativa"
                                     title="Buscar partida ativa"
