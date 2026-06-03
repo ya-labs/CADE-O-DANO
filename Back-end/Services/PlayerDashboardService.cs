@@ -198,7 +198,9 @@ public class PlayerDashboardService : IPlayerDashboardService
       var activeMatch = await _riotApiService.GetActiveMatchByPuuid(puuid);
 
       if (activeMatch == null)
-        return ServiceResult<ActiveMatchDto>.Fail("Nenhuma partida ativa encontrada para este jogador.");
+        return ServiceResult<ActiveMatchDto>.Success(
+          null,
+          "Jogador não está em uma partida ativa.");
 
       var participantsTasks = activeMatch.Participants.Select(BuildActiveMatchParticipant);
       var participants = await Task.WhenAll(participantsTasks);
