@@ -139,6 +139,7 @@ input:focus-visible,
 [tabindex]:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--rune-tree-title, var(--gold)) 82%, white 18%);
   outline-offset: 3px;
+  border-radius: var(--radius);
 }
 
 .remote-image {
@@ -305,7 +306,7 @@ input:focus-visible,
 }
 
 .login-form input {
-  padding: 0 15px;
+  padding: 0 0 0 15px;
 }
 
 .login-form input::placeholder {
@@ -324,7 +325,7 @@ input:focus-visible,
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 15px;
+  padding: 0 0 0 15px;
 }
 
 .tag-field input {
@@ -332,6 +333,9 @@ input:focus-visible,
   border: 0;
   background: transparent;
   box-shadow: none;
+  margin-left: 5px;
+  padding-left: 5px;
+  outline-offset: 4px;
 }
 
 .tag-field input:focus {
@@ -654,11 +658,17 @@ input:focus-visible,
   transition: transform var(--motion-base) var(--ease-out), background var(--motion-base) var(--ease-smooth), border-color var(--motion-base) var(--ease-smooth), box-shadow var(--motion-base) var(--ease-smooth);
 }
 
-.backButton:hover {
+.backButton:hover:not(:disabled) {
   transform: translateX(-2px);
   border-color: rgba(248, 213, 107, 0.42);
   background: rgba(248, 213, 107, 0.12);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+}
+
+.backButton:disabled,
+.history-page__search-nick-input:disabled,
+.history-page__search-tag-input:disabled {
+  opacity: 0.58;
 }
 
 .history-page,
@@ -667,6 +677,14 @@ input:focus-visible,
 .match-details-page {
     width: 100%;
     max-width: none;
+}
+
+.history-page__loading-blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  cursor: progress;
+  background: rgba(6, 8, 16, 0.08);
 }
 
 .history-page__buttons-box,
@@ -721,6 +739,73 @@ input:focus-visible,
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 22px;
+}
+
+.history-page__search {
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.history-page__search-nick-input,
+.history-page__search-tag-field {
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  transition: transform var(--motion-base) var(--ease-out), border-color var(--motion-base) var(--ease-smooth), box-shadow var(--motion-base) var(--ease-smooth), background var(--motion-base) var(--ease-smooth);
+}
+
+.history-page__search-nick-input {
+  min-width: 0;
+  flex: 1 1 220px;
+  padding: 0 14px;
+}
+
+.history-page__search-nick-input::placeholder,
+.history-page__search-tag-input::placeholder {
+  color: rgba(221, 229, 239, 0.62);
+}
+
+.history-page__search-nick-input:focus,
+.history-page__search-tag-field:focus-within {
+  transform: translateY(-1px);
+  border-color: rgba(65, 217, 255, 0.72);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 4px rgba(65, 217, 255, 0.14);
+}
+
+.history-page__search-tag-field {
+  width: 118px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+}
+
+.history-page__search-tag-hashtag {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.history-page__search-tag-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  margin-left: 5px;
+  padding-left: 3px;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.history-page__search-tag-input:focus {
+  transform: none;
 }
 
 .history-page__actions {
@@ -3875,6 +3960,15 @@ input:focus-visible,
   .history-page__topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .history-page__search {
+    width: 100%;
+    max-width: none;
+  }
+
+  .history-page__search-tag-field {
+    width: 108px;
   }
 
   .history-page__actions {

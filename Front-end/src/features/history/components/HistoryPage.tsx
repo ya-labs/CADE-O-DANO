@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Clock, RefreshCw, ShieldBan, Swords } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, RefreshCw, Search, ShieldBan, Swords } from "lucide-react";
 import type { MatchSummary } from "../../../types/match";
 import type { HighestDamageChampion, Mastery, MostPlayedChampion } from "../../../services/api/types";
 import BackButton from "../../../shared/components/BackButton";
@@ -21,6 +21,7 @@ type Props = {
     onSearchParticipant: (nick: string, tag: string) => Promise<void>;
     isLoadingMatchDetails: boolean;
     isRefreshingHistory: boolean;
+    isSearchingParticipant: boolean;
     isRefreshingActiveMatch: boolean;
     matchError: string;
     activeMatchError: string;
@@ -320,12 +321,24 @@ function HistoryPage ({
     onSearchParticipant,
     isLoadingMatchDetails,
     isRefreshingHistory,
+    isSearchingParticipant,
     isRefreshingActiveMatch,
     matchError,
     activeMatchError,
     mostPlayedChampions,
     highestDamageChampions
 }: Props) {
+    const [nick, setNick] = useState("");
+    const [tag, setTag] = useState("");
+    const canSearchParticipant = Boolean(nick.trim() && tag.trim());
+    const isInteractionBlocked = isSearchingParticipant || isLoadingMatchDetails;
+
+    function handleSearchParticipant() {
+        if (!canSearchParticipant || isInteractionBlocked) return;
+
+        onSearchParticipant(nick, tag);
+    }
+
     const maxDamageInList = Math.max(...matches.map((match) => match.totalDamage), 0);
     const matchesWithoutRemake = matches.filter((match) => match.result !== 2);
     const minDamageInList = matchesWithoutRemake.length > 0
@@ -335,6 +348,7 @@ function HistoryPage ({
     const [showDamageText, setShowDamageText] = useState(false);
     const feedbackMessage = matchError
         || activeMatchError
+        || (isSearchingParticipant ? "Buscando histórico do jogador..." : "")
         || (isLoadingMatchDetails ? "Carregando detalhes da partida..." : "")
         || (isRefreshingHistory ? "Atualizando histórico..." : "")
         || (isRefreshingActiveMatch ? "Buscando partida ativa..." : "");
@@ -345,16 +359,65 @@ function HistoryPage ({
                 variant={matchError || activeMatchError ? "error" : "loading"}
                 message={feedbackMessage}
             />
+            {isInteractionBlocked && <div className="history-page__loading-blocker" aria-hidden="true" />}
 
             <div className="history-page__topbar">
-                <BackButton onBack={onBack}/>
+                <BackButton onBack={onBack} disabled={isInteractionBlocked}/>
+
+                <div className="history-page__search">
+                    <input
+                        className="history-page__search-nick-input"
+                        placeholder="Usuário"
+                        autoComplete="off"
+                        value={nick}
+                        disabled={isInteractionBlocked}
+                        onChange={(e) => setNick(e.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key !== "Enter" || !canSearchParticipant || isInteractionBlocked) return;
+                            handleSearchParticipant();
+                        }}
+                        type="text"
+                    />
+
+                    <div className="history-page__search-tag-field">
+                        <span className="history-page__search-tag-hashtag">#</span>
+                        <input
+                            className="history-page__search-tag-input"
+                            placeholder="BR1"
+                            autoComplete="off"
+                            value={tag}
+                            disabled={isInteractionBlocked}
+                            onChange={(e) => setTag(e.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key !== "Enter" || !canSearchParticipant || isInteractionBlocked) return;
+                                handleSearchParticipant();
+                            }}
+                            type="text"
+                        />
+                    </div>
+
+                    <button
+                        type="button"
+                        className={isSearchingParticipant ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
+                        onClick={handleSearchParticipant}
+                        disabled={isInteractionBlocked || isRefreshingHistory || !canSearchParticipant}
+                        aria-label="Pesquisar jogador"
+                        title="Pesquisar jogador"
+                    >
+                        {isSearchingParticipant ? (
+                            <RefreshCw size={20} strokeWidth={2.4} aria-hidden="true" />
+                        ) : (
+                            <Search size={20} strokeWidth={2.4} aria-hidden="true" />
+                        )}
+                    </button>
+                </div>
 
                 <div className="history-page__actions">
                     <button
                         type="button"
                         className={isRefreshingHistory ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
                         onClick={onRefreshHistory}
-                        disabled={isRefreshingHistory}
+                        disabled={isInteractionBlocked || isRefreshingHistory}
                         aria-label="Recarregar histórico"
                         title="Recarregar histórico"
                     >
@@ -368,6 +431,7 @@ function HistoryPage ({
                             type="checkbox"
                             name="show-damage-text"
                             checked={showDamageText}
+                            disabled={isInteractionBlocked}
                             onChange={(event) => setShowDamageText(event.target.checked)}
                         />
                         <span className="damage-toggle__control" />
@@ -447,6 +511,7 @@ function HistoryPage ({
                                 type="button"
                                 className="history-mastery-link"
                                 onClick={onShowMasteries}
+                                disabled={isInteractionBlocked}
                             >
                                 <span>Ver todas as maestrias</span>
                                 <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
@@ -479,7 +544,7 @@ function HistoryPage ({
                                     type="button"
                                     className={isRefreshingActiveMatch ? "history-page__refresh-button is-loading" : "history-page__refresh-button"}
                                     onClick={onRefreshActiveMatch}
-                                    disabled={isRefreshingActiveMatch}
+                                    disabled={isInteractionBlocked || isRefreshingActiveMatch}
                                     aria-label="Buscar partida ativa"
                                     title="Buscar partida ativa"
                                 >
@@ -497,7 +562,7 @@ function HistoryPage ({
                                 maxDamageInList={maxDamageInList}
                                 minDamageInList={minDamageInList}
                                 onSelectMatch={onSelectMatch}
-                                isLoadingMatchDetails={isLoadingMatchDetails}
+                                isLoadingMatchDetails={isInteractionBlocked}
                                 showDamageText={showDamageText}
                             />
                         ))
