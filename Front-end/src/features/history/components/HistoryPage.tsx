@@ -467,7 +467,7 @@ function HistoryPage ({
                             />
                         ) : (
                             <div className="active-match-empty">
-                                <div>
+                                <div className="active-match-empty__content">
                                     <p className="active-match-card__eyebrow">
                                         <Swords size={16} strokeWidth={2.4} aria-hidden="true" />
                                         Partida ativa
