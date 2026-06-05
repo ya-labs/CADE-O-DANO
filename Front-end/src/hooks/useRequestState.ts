@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 function getFriendlyRequestError(error: unknown) {
     const rawMessage = error instanceof Error
@@ -52,7 +52,7 @@ function useRequestState() {
         return () => window.clearTimeout(timeoutId);
     }, [error]);
 
-    async function run<T>(fn: () => Promise<T>): Promise<Awaited<T> | undefined> {
+    const run = useCallback(async function run<T>(fn: () => Promise<T>): Promise<Awaited<T> | undefined> {
         setLoading(true);
         setError("");
 
@@ -70,18 +70,18 @@ function useRequestState() {
         } finally {
             setLoading(false);
         }
-    }
+    }, []);
 
-    function clearError() {
+    const clearError = useCallback(function clearError() {
         setError("");
-    }
+    }, []);
 
-    return {
+    return useMemo(() => ({
         loading,
         error,
         run,
-        clearError
-    };
+        clearError,
+    }), [clearError, error, loading, run]);
 }
 
 export default useRequestState;

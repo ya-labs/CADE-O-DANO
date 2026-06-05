@@ -31,7 +31,12 @@ Fluxo esperado:
 6. Vincular o PR à issue usando `Closes #numero`.
 7. Fazer merge na branch `dev`.
 8. Validar integração na `dev`.
-9. Preparar release para `main` somente quando estiver validado.
+9. Criar uma branch `release/x.y.z` a partir da `main`.
+10. Fazer merge da `dev` na branch de release.
+11. Validar a branch de release.
+12. Abrir Pull Request de `release/x.y.z` para `main`.
+13. Fazer merge na `main`.
+14. Criar a tag da versão a partir da `main`.
 
 Se o usuário pedir uma alteração e ainda não houver issue, oriente a criação da issue ou ajude a criar a descrição no padrão do projeto.
 
@@ -115,6 +120,36 @@ docs
 Não oriente duas pessoas a trabalharem na mesma branch.
 
 Não misture frontend e backend na mesma branch, salvo quando o usuário deixar claro que a alteração é pequena, inevitável e pertence ao mesmo escopo técnico.
+
+## Releases
+
+Quando a `dev` estiver validada, prepare a versão em uma branch própria criada a partir da `main`.
+
+Padrão:
+
+```txt
+release/x.y.z
+```
+
+Exemplo:
+
+```txt
+release/1.0.0
+```
+
+Fluxo esperado:
+
+1. Atualizar a `main`.
+2. Criar `release/x.y.z` a partir da `main`.
+3. Fazer merge da `dev` na branch de release.
+4. Resolver conflitos, se existirem.
+5. Rodar as validações do projeto.
+6. Abrir PR de `release/x.y.z` para `main`.
+7. Fazer merge na `main`.
+8. Criar a tag `vx.y.z` a partir da `main`.
+9. Publicar a tag no GitHub.
+
+Não crie tag diretamente na `dev`. A tag deve apontar para o commit que realmente foi integrado na `main`.
 
 ## Commits
 

@@ -215,6 +215,90 @@ Regras:
 12. Testar integração na `dev`.
 13. Quando tudo estiver validado, preparar release para `main`.
 
+## Fluxo de release
+
+Quando a branch `dev` estiver validada e pronta para virar uma nova versão da aplicação, a release deve ser preparada em uma branch própria criada a partir da `main`.
+
+Esse fluxo cria uma etapa intermediária para revisar exatamente o que será publicado, sem misturar novas tarefas em desenvolvimento com a versão que vai para produção.
+
+### Padrão de branch de release
+
+Use o formato:
+
+```txt
+release/x.y.z
+```
+
+Exemplos:
+
+```txt
+release/1.0.0
+release/1.1.0
+release/1.1.1
+```
+
+Essa branch é uma exceção ao padrão `area/tipoNumero-descricao-curta`, porque não representa uma issue específica. Ela representa a preparação de uma versão.
+
+### Passo a passo
+
+1. Garantir que a branch `dev` foi validada.
+2. Atualizar a branch `main` local com a versão remota.
+3. Criar a branch `release/x.y.z` a partir da `main`.
+4. Fazer merge da `dev` na branch de release.
+5. Resolver conflitos, se existirem.
+6. Rodar as validações necessárias da aplicação.
+7. Abrir Pull Request de `release/x.y.z` para `main`.
+8. Revisar o PR e confirmar que ele contém apenas o conteúdo esperado da release.
+9. Fazer merge da branch de release na `main`.
+10. Atualizar a `main` local.
+11. Criar a tag da versão a partir da `main`.
+12. Publicar a tag no GitHub.
+
+### Comandos base
+
+Exemplo para uma release `1.0.0`:
+
+```powershell
+git fetch --all --tags
+
+git checkout main
+git pull origin main
+
+git checkout -b release/1.0.0
+git merge origin/dev --no-ff
+```
+
+Depois da validação e do merge do Pull Request para `main`:
+
+```powershell
+git checkout main
+git pull origin main
+
+git tag -a v1.0.0 -m "release: v1.0.0"
+git push origin v1.0.0
+```
+
+### Validações recomendadas
+
+Antes de abrir ou aprovar o Pull Request da release, rode as validações principais do projeto:
+
+```powershell
+cd Front-end
+npm run lint
+npm run build
+
+cd ..\Back-end
+dotnet build
+```
+
+Se alguma validação falhar, corrija o problema na branch adequada antes de concluir a release.
+
+### Regra para tags
+
+A tag da versão deve ser criada somente depois que a release estiver integrada na `main`.
+
+Não crie tag diretamente na `dev`, porque a tag precisa apontar para o commit que realmente representa a versão publicada.
+
 ## Padrão de Pull Requests
 
 O Pull Request deve explicar o que foi feito e deixar claro o impacto da alteração.

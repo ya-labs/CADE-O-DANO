@@ -1,8 +1,8 @@
 /* REACT */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /* SERVICES */
-import { buscarHistorico, buscarMatch } from "../services/api/riotApi";
+import { buscarHistorico, buscarMatch, buscarActiveMatch } from "../services/api/riotApi";
 
 /* TIPOS */
 import type { MatchDetail } from "../types/matchDetail";
@@ -40,11 +40,16 @@ function AppFlow () {
 
     const [screen, setScreen] = useState<Screen>(() => playerData ? "historico" : "login");
 
-    const [searchedPlayers, setSearchedPlayers] = useState<StoredPlayer[]>([]);
+    const [searchedPlayers, setSearchedPlayers] = useState<StoredPlayer[]>(() => getSearchedPlayers());
 
     const historyRequest = useRequestState();
     const participantRequest = useRequestState();
     const matchRequest = useRequestState();
+    const activeMatchRequest = useRequestState();
+    const { run: runHistoryRequest, clearError: clearHistoryError } = historyRequest;
+    const { run: runParticipantRequest, clearError: clearParticipantError } = participantRequest;
+    const { run: runMatchRequest, clearError: clearMatchError } = matchRequest;
+    const { run: runActiveMatchRequest, clearError: clearActiveMatchError } = activeMatchRequest;
     
     const playerProfile = playerData?.profile;
     const rankedStats = playerData?.rankedStats;
@@ -52,27 +57,62 @@ function AppFlow () {
     const playerMasteries = playerData?.masteries;
     const performanceSummary = playerData?.performanceSummary;
 
-    useEffect(() => {
-        setSearchedPlayers(getSearchedPlayers());
+    const handleSearchActiveMatch = useCallback(async function handleSearchActiveMatch(
+        puuid = playerProfile?.puuid,
+        historyData: SearchHistoryData | null = null
+    ) {
+        clearHistoryError();
+        clearParticipantError();
+        clearMatchError();
+        
+        if (!puuid) return;
 
-        const storedPlayer = getCurrentPlayer();
+        const response = await runActiveMatchRequest(() =>
+            buscarActiveMatch(puuid)
+        );
 
-        if (!storedPlayer) return;
+        if (!response) return;
 
-        handleSearchHistory(storedPlayer.nick, storedPlayer.tag);
-    }, []);
+        setPlayerData((currentPlayerData) => {
+            if (currentPlayerData && currentPlayerData.profile.puuid !== puuid) {
+                return currentPlayerData;
+            }
 
-    async function handleSearchHistory(
+            const basePlayerData = currentPlayerData ?? historyData;
+
+            if (!basePlayerData) return currentPlayerData;
+
+            const updatedPlayerData: SearchHistoryData = {
+                ...basePlayerData,
+                matches: {
+                    ...basePlayerData.matches,
+                    activeMatch: response.data,
+                },
+            };
+
+            saveCurrentPlayerHistory(updatedPlayerData);
+            return updatedPlayerData;
+        });
+    }, [
+        clearHistoryError,
+        clearMatchError,
+        clearParticipantError,
+        playerProfile?.puuid,
+        runActiveMatchRequest,
+    ]);
+
+    const handleSearchHistory = useCallback(async function handleSearchHistory(
         nick: string | null,
         tag: string | null,
     ) {
         if (!nick || !tag) return;
 
         setMatchDetails(null);
-        participantRequest.clearError();
-        matchRequest.clearError();
+        clearParticipantError();
+        clearMatchError();
+        clearActiveMatchError();
 
-        const response = await historyRequest.run(() =>
+        const response = await runHistoryRequest(() =>
             buscarHistorico(nick, tag)
         );
 
@@ -90,7 +130,25 @@ function AppFlow () {
         setSearchedPlayers(getSearchedPlayers());
 
         setScreen("historico");
-    };
+
+        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
+    }, [
+        clearActiveMatchError,
+        clearMatchError,
+        clearParticipantError,
+        handleSearchActiveMatch,
+        runHistoryRequest,
+    ]);
+
+    useEffect(() => {
+        const storedPlayer = getCurrentPlayer();
+
+        if (!storedPlayer) return;
+
+        void Promise.resolve().then(() =>
+            handleSearchHistory(storedPlayer.nick, storedPlayer.tag)
+        );
+    }, [handleSearchHistory]);
 
     async function handleSearchParticipant(
         nick: string | null,
@@ -98,7 +156,7 @@ function AppFlow () {
     ) {
         if (!nick || !tag) return;
 
-        const response = await participantRequest.run(() =>
+        const response = await runParticipantRequest(() =>
             buscarHistorico(nick, tag)
         );
 
@@ -117,15 +175,18 @@ function AppFlow () {
         setSearchedPlayers(getSearchedPlayers());
 
         setScreen("historico");
+
+        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
     };
 
     async function handleSelectMatch(matchId: string) {
-        historyRequest.clearError();
-        participantRequest.clearError();
+        clearHistoryError();
+        clearParticipantError();
+        clearActiveMatchError();
         
         if (!playerProfile?.puuid) return;
 
-        const response = await matchRequest.run(() =>
+        const response = await runMatchRequest(() =>
             buscarMatch(matchId, playerProfile.puuid)
         );
 
@@ -182,10 +243,18 @@ function AppFlow () {
                     <HistoryPage
                         onBack={handleBackToLogin}
                         onShowMasteries={()=> setScreen("maestrias")}
-                        onRefresh={handleRefreshHistory}
+                        onRefreshHistory={handleRefreshHistory}
+                        onRefreshActiveMatch={handleSearchActiveMatch}
+                        activeMatch={playerMatches?.activeMatch || null}
+                        searchedPlayerPuuid={playerProfile?.puuid || null}
                         matches={playerMatches?.recentMatches || []}
                         mastery={playerMasteries?.[0] || null}
+                        onSearchParticipant={handleSearchParticipant}
                         isRefreshingHistory={historyRequest.loading}
+                        isSearchingParticipant={participantRequest.loading}
+                        isRefreshingActiveMatch={activeMatchRequest.loading}
+                        participantSearchError={participantRequest.error}
+                        activeMatchError={activeMatchRequest.error}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
                         onSelectMatch={handleSelectMatch}
