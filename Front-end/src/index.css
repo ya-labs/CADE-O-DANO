@@ -142,16 +142,6 @@ input:focus-visible,
   border-radius: var(--radius);
 }
 
-.remote-image-frame {
-  position: relative;
-  display: inline-block;
-  flex: 0 0 auto;
-  overflow: hidden;
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.055);
-  transition: opacity var(--motion-base) var(--ease-smooth), filter var(--motion-base) var(--ease-smooth), transform var(--motion-base) var(--ease-out);
-}
-
 .remote-image-frame::before {
   content: "";
   position: absolute;
