@@ -142,23 +142,56 @@ input:focus-visible,
   border-radius: var(--radius);
 }
 
-.remote-image {
+.remote-image-frame {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  overflow: hidden;
   opacity: 1;
   background: rgba(255, 255, 255, 0.055);
   transition: opacity var(--motion-base) var(--ease-smooth), filter var(--motion-base) var(--ease-smooth), transform var(--motion-base) var(--ease-out);
 }
 
-.remote-image--loading {
-  opacity: 0.76;
+.remote-image-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background:
     linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.18) 42%, transparent 72%),
     linear-gradient(135deg, rgba(65, 217, 255, 0.13), rgba(248, 213, 107, 0.08)),
     rgba(10, 15, 26, 0.92);
   background-size: 220% 100%, 100% 100%, 100% 100%;
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--ease-smooth);
+}
+
+.remote-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  opacity: 1;
+  transition: opacity var(--motion-base) var(--ease-smooth), filter var(--motion-base) var(--ease-smooth);
+}
+
+.remote-image--loading {
+  opacity: 0.76;
   filter: saturate(0.62) brightness(0.84);
+}
+
+.remote-image--loading::before {
+  opacity: 1;
   animation:
     imageLoadingPulse 1.15s ease-in-out infinite,
     remoteImageShimmer 1.2s var(--ease-smooth) infinite;
+}
+
+.remote-image--loading .remote-image {
+  opacity: 0;
 }
 
 .remote-image--error {
@@ -2145,10 +2178,16 @@ input:focus-visible,
 .champ-icon__frame,
 .participant-card .champ-info,
 .player-icon {
+  box-sizing: border-box;
   border-radius: var(--radius);
   background: linear-gradient(135deg, var(--gold), var(--cyan));
   padding: 2px;
   transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-smooth), filter var(--motion-base) var(--ease-smooth);
+}
+
+.champ-icon__frame {
+  width: 100%;
+  height: 100%;
 }
 
 .match-card:hover .champ-icon__frame,
@@ -2189,6 +2228,7 @@ input:focus-visible,
   font-family: var(--mono);
   font-size: 0.75rem;
   font-weight: 800;
+  z-index: 1;
 }
 
 .champion-name,
