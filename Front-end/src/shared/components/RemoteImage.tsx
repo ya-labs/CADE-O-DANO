@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 type ImageStatus = "loading" | "loaded" | "error";
 
@@ -11,6 +11,11 @@ type Props = {
 
 function RemoteImageContent({ src, alt, className = "", loading = "lazy" }: Props) {
     const [status, setStatus] = useState<ImageStatus>("loading");
+    const handleImageRef = useCallback((image: HTMLImageElement | null) => {
+        if (!image || !image.complete) return;
+
+        setStatus(image.naturalWidth > 0 ? "loaded" : "error");
+    }, []);
 
     return (
         <span
@@ -21,6 +26,7 @@ function RemoteImageContent({ src, alt, className = "", loading = "lazy" }: Prop
             ].filter(Boolean).join(" ")}
         >
             <img
+                ref={handleImageRef}
                 className="remote-image"
                 src={src}
                 alt={alt}
