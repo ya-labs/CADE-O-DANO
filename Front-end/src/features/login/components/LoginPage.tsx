@@ -16,28 +16,26 @@ function LoginPage({ onSearch, loading, historyError, searchedPlayers, onRemoveS
     const [nick, setNick] = useState("");
     const [tag, setTag] = useState("");
     const [openSearchPlayersList, setOpenSearchPlayersList] = useState(false);
-    const [shouldFocusFirstSearchedPlayer, setShouldFocusFirstSearchedPlayer] = useState(false);
-    
     const [activeSearchedPlayerIndex, setActiveSearchedPlayerIndex] = useState<number | null>(null);
 
     const userInputRef = useRef<HTMLInputElement>(null);
     const searchedPlayerButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
     const ignoreNextUserInputFocusRef = useRef(false);
+    const shouldFocusFirstSearchedPlayerRef = useRef(false);
 
     const filteredSearchedPlayers = searchedPlayers.filter((player) =>
         player.nick.toLowerCase().includes(nick.toLowerCase())
     );
 
     useEffect(() => {
-        if (!shouldFocusFirstSearchedPlayer) return;
+        if (!shouldFocusFirstSearchedPlayerRef.current) return;
         if (!openSearchPlayersList) return;
         if (filteredSearchedPlayers.length === 0) return;
 
         searchedPlayerButtonRefs.current[0]?.focus();
-        setShouldFocusFirstSearchedPlayer(false);
+        shouldFocusFirstSearchedPlayerRef.current = false;
     }, [
-        shouldFocusFirstSearchedPlayer, 
         openSearchPlayersList, 
         filteredSearchedPlayers.length
     ]);
@@ -47,7 +45,7 @@ function LoginPage({ onSearch, loading, historyError, searchedPlayers, onRemoveS
             event.preventDefault();
 
             setOpenSearchPlayersList(true);
-            setShouldFocusFirstSearchedPlayer(true);
+            shouldFocusFirstSearchedPlayerRef.current = true;
             setActiveSearchedPlayerIndex(0);
         } else if (event.key === "Escape") {
             setOpenSearchPlayersList(false);

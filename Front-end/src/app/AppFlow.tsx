@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 /* SERVICES */
-import { buscarHistorico, buscarMatch } from "../services/api/riotApi";
+import { buscarHistorico, buscarMatch, buscarActiveMatch } from "../services/api/riotApi";
 
 /* TIPOS */
 import type { MatchDetail } from "../types/matchDetail";
@@ -40,11 +40,12 @@ function AppFlow () {
 
     const [screen, setScreen] = useState<Screen>(() => playerData ? "historico" : "login");
 
-    const [searchedPlayers, setSearchedPlayers] = useState<StoredPlayer[]>([]);
+    const [searchedPlayers, setSearchedPlayers] = useState<StoredPlayer[]>(() => getSearchedPlayers());
 
     const historyRequest = useRequestState();
     const participantRequest = useRequestState();
     const matchRequest = useRequestState();
+    const activeMatchRequest = useRequestState();
     
     const playerProfile = playerData?.profile;
     const rankedStats = playerData?.rankedStats;
@@ -53,8 +54,6 @@ function AppFlow () {
     const performanceSummary = playerData?.performanceSummary;
 
     useEffect(() => {
-        setSearchedPlayers(getSearchedPlayers());
-
         const storedPlayer = getCurrentPlayer();
 
         if (!storedPlayer) return;
@@ -71,6 +70,7 @@ function AppFlow () {
         setMatchDetails(null);
         participantRequest.clearError();
         matchRequest.clearError();
+        activeMatchRequest.clearError();
 
         const response = await historyRequest.run(() =>
             buscarHistorico(nick, tag)
@@ -90,6 +90,8 @@ function AppFlow () {
         setSearchedPlayers(getSearchedPlayers());
 
         setScreen("historico");
+
+        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
     };
 
     async function handleSearchParticipant(
@@ -117,11 +119,14 @@ function AppFlow () {
         setSearchedPlayers(getSearchedPlayers());
 
         setScreen("historico");
+
+        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
     };
 
     async function handleSelectMatch(matchId: string) {
         historyRequest.clearError();
         participantRequest.clearError();
+        activeMatchRequest.clearError();
         
         if (!playerProfile?.puuid) return;
 
@@ -134,6 +139,44 @@ function AppFlow () {
         setMatchDetails(response.data);
 
         setScreen("detalhes");
+    };
+
+    async function handleSearchActiveMatch(
+        puuid = playerProfile?.puuid,
+        historyData: SearchHistoryData | null = null
+    ) {
+        historyRequest.clearError();
+        participantRequest.clearError();
+        matchRequest.clearError();
+        
+        if (!puuid) return;
+
+        const response = await activeMatchRequest.run(() =>
+            buscarActiveMatch(puuid)
+        );
+
+        if (!response) return;
+
+        setPlayerData((currentPlayerData) => {
+            if (currentPlayerData && currentPlayerData.profile.puuid !== puuid) {
+                return currentPlayerData;
+            }
+
+            const basePlayerData = currentPlayerData ?? historyData;
+
+            if (!basePlayerData) return currentPlayerData;
+
+            const updatedPlayerData: SearchHistoryData = {
+                ...basePlayerData,
+                matches: {
+                    ...basePlayerData.matches,
+                    activeMatch: response.data,
+                },
+            };
+
+            saveCurrentPlayerHistory(updatedPlayerData);
+            return updatedPlayerData;
+        });
     };
 
     async function handleRefreshHistory() {
@@ -182,10 +225,17 @@ function AppFlow () {
                     <HistoryPage
                         onBack={handleBackToLogin}
                         onShowMasteries={()=> setScreen("maestrias")}
-                        onRefresh={handleRefreshHistory}
+                        onRefreshHistory={handleRefreshHistory}
+                        onRefreshActiveMatch={handleSearchActiveMatch}
+                        activeMatch={playerMatches?.activeMatch || null}
+                        searchedPlayerPuuid={playerProfile?.puuid || null}
                         matches={playerMatches?.recentMatches || []}
                         mastery={playerMasteries?.[0] || null}
+                        onSearchParticipant={handleSearchParticipant}
                         isRefreshingHistory={historyRequest.loading}
+                        isSearchingParticipant={participantRequest.loading}
+                        isRefreshingActiveMatch={activeMatchRequest.loading}
+                        activeMatchError={activeMatchRequest.error}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
                         onSelectMatch={handleSelectMatch}

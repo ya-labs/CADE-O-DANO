@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 type ImageStatus = "loading" | "loaded" | "error";
 
@@ -9,39 +9,31 @@ type Props = {
     loading?: "eager" | "lazy";
 }
 
-function RemoteImage({ src, alt, className = "", loading = "lazy" }: Props) {
-    const imageRef = useRef<HTMLImageElement | null>(null);
+function RemoteImageContent({ src, alt, className = "", loading = "lazy" }: Props) {
     const [status, setStatus] = useState<ImageStatus>("loading");
 
-    useEffect(() => {
-        const image = imageRef.current;
-
-        setStatus("loading");
-
-        if (!image) return;
-
-        if (image.complete && image.naturalWidth > 0) {
-            setStatus("loaded");
-        } else if (image.complete && image.naturalWidth === 0) {
-            setStatus("error");
-        }
-    }, [src]);
-
     return (
-        <img
-            ref={imageRef}
+        <span
             className={[
-                "remote-image",
+                "remote-image-frame",
                 `remote-image--${status}`,
                 className,
             ].filter(Boolean).join(" ")}
-            src={src}
-            alt={alt}
-            loading={loading}
-            onLoad={() => setStatus("loaded")}
-            onError={() => setStatus("error")}
-        />
+        >
+            <img
+                className="remote-image"
+                src={src}
+                alt={alt}
+                loading={loading}
+                onLoad={() => setStatus("loaded")}
+                onError={() => setStatus("error")}
+            />
+        </span>
     );
+}
+
+function RemoteImage(props: Props) {
+    return <RemoteImageContent key={props.src} {...props} />;
 }
 
 export default RemoteImage;
