@@ -253,6 +253,7 @@ function AppFlow () {
                         isRefreshingHistory={historyRequest.loading}
                         isSearchingParticipant={participantRequest.loading}
                         isRefreshingActiveMatch={activeMatchRequest.loading}
+                        participantSearchError={participantRequest.error}
                         activeMatchError={activeMatchRequest.error}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
