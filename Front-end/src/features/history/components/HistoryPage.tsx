@@ -23,6 +23,7 @@ type Props = {
     isRefreshingHistory: boolean;
     isSearchingParticipant: boolean;
     isRefreshingActiveMatch: boolean;
+    participantSearchError: string;
     matchError: string;
     activeMatchError: string;
     mostPlayedChampions: MostPlayedChampion[];
@@ -323,6 +324,7 @@ function HistoryPage ({
     isRefreshingHistory,
     isSearchingParticipant,
     isRefreshingActiveMatch,
+    participantSearchError,
     matchError,
     activeMatchError,
     mostPlayedChampions,
@@ -346,7 +348,8 @@ function HistoryPage ({
         : 0;
 
     const [showDamageText, setShowDamageText] = useState(false);
-    const feedbackMessage = matchError
+    const feedbackMessage = participantSearchError
+        || matchError
         || activeMatchError
         || (isSearchingParticipant ? "Buscando histórico do jogador..." : "")
         || (isLoadingMatchDetails ? "Carregando detalhes da partida..." : "")
@@ -356,7 +359,7 @@ function HistoryPage ({
     return (
         <div className="history-page">
             <FloatingAlert
-                variant={matchError || activeMatchError ? "error" : "loading"}
+                variant={participantSearchError || matchError || activeMatchError ? "error" : "loading"}
                 message={feedbackMessage}
             />
             {isInteractionBlocked && <div className="history-page__loading-blocker" aria-hidden="true" />}
