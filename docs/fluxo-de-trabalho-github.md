@@ -421,18 +421,20 @@ O Pull Request deve explicar o que foi feito e deixar claro o impacto da altera�
 Título recomendado:
 
 ```txt
-Tipo: descrição curta da tarefa #numero
+Tipo: descrição curta da tarefa ISSUE #XX (PR #YY)
 ```
 
 Exemplos:
 
 ```txt
-Feature: partida ativa do jogador no perfil #6
-Fix: tratamento de jogador sem partida ativa #36
-Docs: fluxo de trabalho com GitHub Projects #40
+Feature: partida ativa do jogador no perfil ISSUE #6 (PR #33)
+Fix: tratamento de jogador sem partida ativa ISSUE #36 (PR #37)
+Docs: fluxo de trabalho com GitHub Projects ISSUE #40 (PR #41)
 ```
 
-O número da issue no título ajuda a identificar rapidamente a rastreabilidade na lista de Pull Requests.
+O trecho `ISSUE #XX (PR #YY)` no título ajuda a identificar rapidamente a rastreabilidade na lista de Pull Requests.
+
+Como o número do PR só existe depois da criação do Pull Request, crie o PR primeiro com a issue no título e edite o título em seguida para adicionar `(PR #YY)`.
 
 Mesmo com a issue no título, mantenha `Closes #numero` no corpo do PR. É essa referência no corpo que garante o fechamento automático da issue quando o PR for mergeado.
 

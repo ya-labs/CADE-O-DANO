@@ -257,18 +257,22 @@ Ao criar ou orientar um Pull Request, use a issue relacionada também no título
 Formato recomendado:
 
 ```txt
-Tipo: descrição curta #numero
+Tipo: descrição curta ISSUE #XX (PR #YY)
 ```
 
 Exemplos:
 
 ```txt
-Feature: adiciona card de partida em tempo real #6
-Fix: corrige busca de participante no histórico #41
-Docs: atualiza fluxo de release e validações da IA #40
+Feature: adiciona card de partida em tempo real ISSUE #6 (PR #33)
+Fix: corrige busca de participante no histórico ISSUE #41 (PR #42)
+Docs: atualiza fluxo de release e validações da IA ISSUE #40 (PR #41)
 ```
 
-O `#numero` no título facilita a leitura da lista de PRs. O fechamento automático da issue deve continuar no corpo do PR com `Closes #numero`.
+O trecho `ISSUE #XX (PR #YY)` no título facilita a leitura da lista de PRs e deixa a rastreabilidade visível.
+
+Como o número do PR só existe depois que ele é criado, crie o PR com a issue no título e edite o título em seguida para adicionar `(PR #YY)`.
+
+O fechamento automático da issue deve continuar no corpo do PR com `Closes #numero`.
 
 Use a estrutura:
 
