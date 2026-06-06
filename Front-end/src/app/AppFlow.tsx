@@ -1,5 +1,5 @@
 /* REACT */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /* SERVICES */
 import { buscarHistorico, buscarMatch, buscarActiveMatch } from "../services/api/riotApi";
@@ -46,6 +46,10 @@ function AppFlow () {
     const participantRequest = useRequestState();
     const matchRequest = useRequestState();
     const activeMatchRequest = useRequestState();
+    const { run: runHistoryRequest, clearError: clearHistoryError } = historyRequest;
+    const { run: runParticipantRequest, clearError: clearParticipantError } = participantRequest;
+    const { run: runMatchRequest, clearError: clearMatchError } = matchRequest;
+    const { run: runActiveMatchRequest, clearError: clearActiveMatchError } = activeMatchRequest;
     
     const playerProfile = playerData?.profile;
     const rankedStats = playerData?.rankedStats;
@@ -53,105 +57,17 @@ function AppFlow () {
     const playerMasteries = playerData?.masteries;
     const performanceSummary = playerData?.performanceSummary;
 
-    useEffect(() => {
-        const storedPlayer = getCurrentPlayer();
-
-        if (!storedPlayer) return;
-
-        handleSearchHistory(storedPlayer.nick, storedPlayer.tag);
-    }, []);
-
-    async function handleSearchHistory(
-        nick: string | null,
-        tag: string | null,
-    ) {
-        if (!nick || !tag) return;
-
-        setMatchDetails(null);
-        participantRequest.clearError();
-        matchRequest.clearError();
-        activeMatchRequest.clearError();
-
-        const response = await historyRequest.run(() =>
-            buscarHistorico(nick, tag)
-        );
-
-        if (!response) return;
-
-        setPlayerData(response.data);
-        saveCurrentPlayerHistory(response.data);
-
-        const icon = response.data.profile.profileIconUrl;
-
-        const searchedPlayer = { profileIconUrl: icon, nick, tag };
-
-        saveCurrentPlayer(searchedPlayer);
-        saveSearchedPlayer(searchedPlayer);
-        setSearchedPlayers(getSearchedPlayers());
-
-        setScreen("historico");
-
-        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
-    };
-
-    async function handleSearchParticipant(
-        nick: string | null,
-        tag: string | null,
-    ) {
-        if (!nick || !tag) return;
-
-        const response = await participantRequest.run(() =>
-            buscarHistorico(nick, tag)
-        );
-
-        if (!response) return;
-
-        setMatchDetails(null);
-        setPlayerData(response.data);
-        saveCurrentPlayerHistory(response.data);
-
-        const icon = response.data.profile.profileIconUrl;
-
-        const searchedPlayer = { profileIconUrl: icon, nick, tag };
-
-        saveCurrentPlayer(searchedPlayer);
-        saveSearchedPlayer(searchedPlayer);
-        setSearchedPlayers(getSearchedPlayers());
-
-        setScreen("historico");
-
-        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
-    };
-
-    async function handleSelectMatch(matchId: string) {
-        historyRequest.clearError();
-        participantRequest.clearError();
-        activeMatchRequest.clearError();
-        
-        if (!playerProfile?.puuid) return;
-
-        const response = await matchRequest.run(() =>
-            buscarMatch(matchId, playerProfile.puuid)
-        );
-
-        if (!response) return;
-
-        setMatchDetails(response.data);
-
-        setScreen("detalhes");
-    };
-
-    async function handleSearchActiveMatch(
+    const handleSearchActiveMatch = useCallback(async function handleSearchActiveMatch(
         puuid = playerProfile?.puuid,
         historyData: SearchHistoryData | null = null
     ) {
-        historyRequest.clearError();
-        participantRequest.clearError();
-        matchRequest.clearError();
+        clearHistoryError();
+        clearParticipantError();
+        clearMatchError();
         
         if (!puuid) return;
 
-        const response = await activeMatchRequest.run(() =>
+        const response = await runActiveMatchRequest(() =>
             buscarActiveMatch(puuid)
         );
 
@@ -177,6 +93,108 @@ function AppFlow () {
             saveCurrentPlayerHistory(updatedPlayerData);
             return updatedPlayerData;
         });
+    }, [
+        clearHistoryError,
+        clearMatchError,
+        clearParticipantError,
+        playerProfile?.puuid,
+        runActiveMatchRequest,
+    ]);
+
+    const handleSearchHistory = useCallback(async function handleSearchHistory(
+        nick: string | null,
+        tag: string | null,
+    ) {
+        if (!nick || !tag) return;
+
+        setMatchDetails(null);
+        clearParticipantError();
+        clearMatchError();
+        clearActiveMatchError();
+
+        const response = await runHistoryRequest(() =>
+            buscarHistorico(nick, tag)
+        );
+
+        if (!response) return;
+
+        setPlayerData(response.data);
+        saveCurrentPlayerHistory(response.data);
+
+        const icon = response.data.profile.profileIconUrl;
+
+        const searchedPlayer = { profileIconUrl: icon, nick, tag };
+
+        saveCurrentPlayer(searchedPlayer);
+        saveSearchedPlayer(searchedPlayer);
+        setSearchedPlayers(getSearchedPlayers());
+
+        setScreen("historico");
+
+        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
+    }, [
+        clearActiveMatchError,
+        clearMatchError,
+        clearParticipantError,
+        handleSearchActiveMatch,
+        runHistoryRequest,
+    ]);
+
+    useEffect(() => {
+        const storedPlayer = getCurrentPlayer();
+
+        if (!storedPlayer) return;
+
+        void Promise.resolve().then(() =>
+            handleSearchHistory(storedPlayer.nick, storedPlayer.tag)
+        );
+    }, [handleSearchHistory]);
+
+    async function handleSearchParticipant(
+        nick: string | null,
+        tag: string | null,
+    ) {
+        if (!nick || !tag) return;
+
+        const response = await runParticipantRequest(() =>
+            buscarHistorico(nick, tag)
+        );
+
+        if (!response) return;
+
+        setMatchDetails(null);
+        setPlayerData(response.data);
+        saveCurrentPlayerHistory(response.data);
+
+        const icon = response.data.profile.profileIconUrl;
+
+        const searchedPlayer = { profileIconUrl: icon, nick, tag };
+
+        saveCurrentPlayer(searchedPlayer);
+        saveSearchedPlayer(searchedPlayer);
+        setSearchedPlayers(getSearchedPlayers());
+
+        setScreen("historico");
+
+        void handleSearchActiveMatch(response.data.profile.puuid, response.data);
+    };
+
+    async function handleSelectMatch(matchId: string) {
+        clearHistoryError();
+        clearParticipantError();
+        clearActiveMatchError();
+        
+        if (!playerProfile?.puuid) return;
+
+        const response = await runMatchRequest(() =>
+            buscarMatch(matchId, playerProfile.puuid)
+        );
+
+        if (!response) return;
+
+        setMatchDetails(response.data);
+
+        setScreen("detalhes");
     };
 
     async function handleRefreshHistory() {
@@ -235,6 +253,7 @@ function AppFlow () {
                         isRefreshingHistory={historyRequest.loading}
                         isSearchingParticipant={participantRequest.loading}
                         isRefreshingActiveMatch={activeMatchRequest.loading}
+                        participantSearchError={participantRequest.error}
                         activeMatchError={activeMatchRequest.error}
                         isLoadingMatchDetails={matchRequest.loading}
                         matchError={matchRequest.error}
