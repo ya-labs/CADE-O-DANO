@@ -138,13 +138,19 @@ Padrão:
 area/tipoNumero-descricao-curta
 ```
 
+Para documentação, não repita `docs/docs`. Use:
+
+```txt
+docsNumero-descricao-curta
+```
+
 Exemplos:
 
 ```txt
 back/feat006-buscar-partida-tempo-real
 front/feat007-interface-partida-tempo-real
 front/feat28-card-partida-tempo-real
-docs/docs031-fluxo-trabalho-github
+docs031-fluxo-trabalho-github
 ```
 
 Áreas:
@@ -221,6 +227,8 @@ Quando a branch `dev` estiver validada e pronta para virar uma nova versão da a
 
 Esse fluxo cria uma etapa intermediária para revisar exatamente o que será publicado, sem misturar novas tarefas em desenvolvimento com a versão que vai para produção.
 
+A `main` pode receber um único commit por release, desde que esse commit registre o conteúdo técnico da versão na descrição. A descrição detalhada de produto deve ficar na GitHub Release associada à tag.
+
 ### Padrão de branch de release
 
 Use o formato:
@@ -237,7 +245,7 @@ release/1.1.0
 release/1.1.1
 ```
 
-Essa branch é uma exceção ao padrão `area/tipoNumero-descricao-curta`, porque não representa uma issue específica. Ela representa a preparação de uma versão.
+Essa branch é uma exceção aos padrões `area/tipoNumero-descricao-curta` e `docsNumero-descricao-curta`, porque não representa uma issue específica. Ela representa a preparação de uma versão.
 
 ### Passo a passo
 
@@ -253,6 +261,111 @@ Essa branch é uma exceção ao padrão `area/tipoNumero-descricao-curta`, porqu
 10. Atualizar a `main` local.
 11. Criar a tag da versão a partir da `main`.
 12. Publicar a tag no GitHub.
+13. Sincronizar a `dev` com a `main` publicada, quando necessário.
+
+### PR da release para main
+
+O Pull Request de `release/x.y.z` para `main` deve representar a publicação da versão.
+
+Título recomendado:
+
+```txt
+Release: publica versão x.y.z
+```
+
+Descrição recomendada:
+
+```md
+## Contexto
+
+Publica a versão x.y.z da aplicação.
+
+Esta release consolida as alterações validadas na branch `release/x.y.z` para publicação na `main`.
+
+## O que mudou
+
+- Lista resumida das principais entregas técnicas.
+- Lista resumida das principais correções.
+- Ajustes de documentação ou fluxo, quando existirem.
+
+## PRs e commits incluídos
+
+- #numero área/tipo: descrição curta
+- área/tipo: descrição curta
+
+## Validações
+
+- Front-end lint executado
+- Front-end build executado
+- Back-end build executado
+
+## Observações
+
+- A tag `vx.y.z` deve ser criada somente depois do merge na `main`.
+```
+
+### Merge da release na main
+
+Quando o objetivo for manter a `main` com um único commit por versão, use **Squash and merge** no PR `release/x.y.z` -> `main`.
+
+Antes de confirmar o squash merge, edite manualmente a mensagem do commit.
+
+Título recomendado do commit:
+
+```txt
+Release: publica versão x.y.z
+```
+
+Descrição recomendada do commit:
+
+```md
+Publica a versão x.y.z da aplicação.
+
+PRs e commits incluídos nesta versão:
+
+- #numero área/tipo: descrição curta
+- área/tipo: descrição curta
+
+Validações:
+
+- Front-end lint executado
+- Front-end build executado
+- Back-end build executado
+
+Tag da versão:
+
+- vx.y.z
+```
+
+Esse commit serve como histórico técnico da versão na `main`.
+
+A GitHub Release da tag deve ter uma descrição mais amigável, focada no que foi entregue para quem usa ou avalia a aplicação.
+
+Exemplo de estrutura para a GitHub Release:
+
+```md
+## Novidades
+
+- Descreva as principais funcionalidades entregues.
+
+## Correções
+
+- Descreva os bugs corrigidos.
+
+## Técnico
+
+- Descreva ajustes internos relevantes, validações e mudanças de fluxo.
+```
+
+### Sincronização da dev após publicação
+
+Se o PR da release para `main` for concluído com squash merge, a `main` terá um novo commit único da release.
+
+Nesse cenário, os commits originais da `dev` não aparecem como ancestrais diretos da `main`. Isso pode fazer o GitHub mostrar a `dev` como estando à frente da `main`, mesmo quando parte ou todo o conteúdo já foi publicado.
+
+Depois de publicar a versão e criar a tag, sincronize a `dev` com a `main` para manter o próximo ciclo de desenvolvimento alinhado.
+
+Se houver conflito nessa sincronização, preserve como referência a versão publicada na `main`, salvo quando a equipe decidir explicitamente manter uma alteração diferente na `dev`.
 
 ### Comandos base
 
@@ -298,6 +411,8 @@ Se alguma validação falhar, corrija o problema na branch adequada antes de con
 A tag da versão deve ser criada somente depois que a release estiver integrada na `main`.
 
 Não crie tag diretamente na `dev`, porque a tag precisa apontar para o commit que realmente representa a versão publicada.
+
+Não mova uma tag já publicada sem alinhamento explícito do time. Mover tag exige reescrever referência publicada e pode confundir quem já baixou a versão anterior.
 
 ## Padrão de Pull Requests
 
@@ -407,3 +522,16 @@ Sempre que a IA for usada para implementar, revisar ou documentar algo no projet
 - commits no padrão do projeto;
 - Pull Requests com contexto, mudanças, observações e vínculo com a issue;
 - documentação de contratos de API quando houver integração entre front-end e back-end.
+
+Antes de alterar arquivos, a IA deve validar:
+
+- branch atual;
+- tipo da alteração solicitada;
+- área afetada;
+- issue relacionada, quando aplicável;
+- compatibilidade com o fluxo documentado;
+- risco de mexer em `main`, `dev`, branch de release ou branch incompatível.
+
+Se a solicitação estiver fora do fluxo documentado, a IA deve avisar o usuário e pedir confirmação explícita antes de prosseguir.
+
+Exceções podem acontecer, principalmente em correções finais pequenas de release, documentação da própria release ou correções emergenciais. Mesmo nesses casos, a IA deve explicar o impacto no fluxo.

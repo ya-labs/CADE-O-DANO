@@ -21,6 +21,8 @@ A IA deve:
 
 Antes de orientar ou executar uma alteração relevante no projeto, verifique se existe uma issue relacionada.
 
+Antes de alterar arquivos, também valide se a branch atual, o tipo da mudança e o fluxo solicitado estão compatíveis com os padrões documentados. Se houver desvio relevante, avise o usuário e peça confirmação explícita antes de prosseguir.
+
 Fluxo esperado:
 
 1. Criar ou identificar a issue.
@@ -35,10 +37,34 @@ Fluxo esperado:
 10. Fazer merge da `dev` na branch de release.
 11. Validar a branch de release.
 12. Abrir Pull Request de `release/x.y.z` para `main`.
-13. Fazer merge na `main`.
+13. Fazer merge na `main`, preferencialmente com squash merge quando o objetivo for manter um único commit de release.
 14. Criar a tag da versão a partir da `main`.
+15. Sincronizar a `dev` com a `main` publicada, quando necessário, para manter o histórico de desenvolvimento alinhado com a versão entregue.
 
 Se o usuário pedir uma alteração e ainda não houver issue, oriente a criação da issue ou ajude a criar a descrição no padrão do projeto.
+
+## Validação obrigatória antes de alterações com IA
+
+Antes de realizar qualquer alteração relevante, a IA deve validar:
+
+1. Branch atual.
+2. Tipo da alteração solicitada: `feat`, `fix`, `docs`, `chore` ou `refactor`.
+3. Área afetada: `front`, `back` ou `docs`.
+4. Existência de issue relacionada, quando aplicável.
+5. Compatibilidade com o fluxo documentado.
+6. Risco de alteração em branch protegida, branch de release ou branch incompatível com a mudança.
+
+Se a branch atual não estiver compatível com a alteração, a IA deve avisar antes de editar arquivos.
+
+Se o usuário quiser prosseguir mesmo fora do fluxo documentado, a IA deve pedir confirmação explícita e registrar na resposta que a alteração foi feita como exceção.
+
+Exceções aceitáveis:
+
+- correções finais pequenas diretamente na branch de release;
+- ajustes de documentação da própria release;
+- correções emergenciais autorizadas pelo usuário.
+
+Mesmo nas exceções, a IA deve informar o impacto no fluxo de trabalho.
 
 ## Issues
 
@@ -91,12 +117,18 @@ Padrão:
 area/tipoNumero-descricao-curta
 ```
 
+Para documentação, não repita `docs/docs`. Use:
+
+```txt
+docsNumero-descricao-curta
+```
+
 Exemplos:
 
 ```txt
 front/feat28-card-partida-tempo-real
 back/fix32-corrige-partida-sem-bans
-docs/docs31-fluxo-trabalho-github
+docs31-fluxo-trabalho-github
 ```
 
 Áreas permitidas:
@@ -148,8 +180,46 @@ Fluxo esperado:
 7. Fazer merge na `main`.
 8. Criar a tag `vx.y.z` a partir da `main`.
 9. Publicar a tag no GitHub.
+10. Sincronizar a `dev` com a `main`, se a publicação da release tiver criado um commit próprio na `main`.
 
 Não crie tag diretamente na `dev`. A tag deve apontar para o commit que realmente foi integrado na `main`.
+
+### Commit de release na main
+
+Quando o objetivo for manter a `main` com um único commit por versão, use squash merge no PR `release/x.y.z` -> `main`.
+
+Nesse caso, edite manualmente a mensagem do squash antes de concluir o merge.
+
+Título recomendado:
+
+```txt
+Release: publica versão x.y.z
+```
+
+Descrição recomendada:
+
+```md
+Publica a versão x.y.z da aplicação.
+
+PRs e commits incluídos nesta versão:
+
+- #numero área/tipo: descrição curta
+- área/tipo: descrição curta
+
+Validações:
+
+- Front-end lint executado
+- Front-end build executado
+- Back-end build executado
+
+Tag da versão:
+
+- vx.y.z
+```
+
+O commit de release deve registrar o fluxo técnico da versão. A descrição detalhada de produto, com novidades e correções em linguagem mais amigável, deve ficar na GitHub Release associada à tag.
+
+Se a release for publicada com squash merge, os commits originais da `dev` não entram como ancestrais diretos da `main`. Isso é esperado. Para evitar confusão no compare do GitHub, sincronize a `dev` com a `main` depois da publicação.
 
 ## Commits
 
